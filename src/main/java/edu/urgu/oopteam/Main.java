@@ -24,7 +24,7 @@ public class Main {
         botOptions.setProxyType(DefaultBotOptions.ProxyType.SOCKS5);
 
         try {
-            //botsApi.registerBot(new edu.urgu.oopteam.CurrencyBot(botOptions));
+            //botsApi.registerBot(new CurrencyBot(botOptions));
             botsApi.registerBot(new CurrencyBot());
         } catch (TelegramApiException e) {
             e.printStackTrace();
