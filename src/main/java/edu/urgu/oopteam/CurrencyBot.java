@@ -15,9 +15,10 @@ import java.io.*;
 
 
 public class CurrencyBot extends TelegramLongPollingBot {
-    private final static String helpMessage = "Hello, it's CurrencyBot!" +
-            "\nI can show you some exchange rates. Use commands below:" +
-            "\n/help - to show this message and view possible commands";
+    private final static String helpMessage = "Привет, это CurrencyBot!" +
+            "\nЯ могу показывать курсы валют. Используй команды ниже:" +
+            "\n/help - показать это сообщение и список возможных команд" +
+            "\n/curr {код валюты} - показать курс указанной валюты к рублю";
 
     public CurrencyBot(){
         super();
@@ -61,7 +62,7 @@ public class CurrencyBot extends TelegramLongPollingBot {
     }
 
     private void sendMessage(Long chatID, String message){
-        var reply = new SendMessage().setChatId(chatID).setText(helpMessage);
+        var reply = new SendMessage().setChatId(chatID).setText(message);
         try {
             execute(reply);
         } catch (TelegramApiException e) {
