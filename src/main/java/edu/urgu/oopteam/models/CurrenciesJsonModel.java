@@ -1,3 +1,5 @@
+package edu.urgu.oopteam.models;
+
 import java.util.Map;
 
 public class CurrenciesJsonModel {

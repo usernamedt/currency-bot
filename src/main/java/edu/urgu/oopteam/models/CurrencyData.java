@@ -1,3 +1,5 @@
+package edu.urgu.oopteam.models;
+
 public class CurrencyData {
     public String ID;
     public String NumCode;
