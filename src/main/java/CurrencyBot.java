@@ -3,11 +3,9 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.net.URL;
+import java.net.URLConnection;
 
 
 public class CurrencyBot extends TelegramLongPollingBot {
@@ -56,6 +54,39 @@ public class CurrencyBot extends TelegramLongPollingBot {
             var fr = new FileReader(tokenFile);
             var reader = new BufferedReader(fr);
             return reader.readLine();
+        }
+    }
+
+    private static String getHttpPageContent(String pageAddress, String codePage) throws Exception {
+        StringBuilder sb = new StringBuilder();
+        URL pageURL = new URL(pageAddress);
+        URLConnection uc = pageURL.openConnection();
+        try (BufferedReader br = new BufferedReader(
+                new InputStreamReader(
+                        uc.getInputStream(), codePage))) {
+            String inputLine;
+            while ((inputLine = br.readLine()) != null) {
+                sb.append(inputLine);
+            }
+        }
+        return sb.toString();
+    }
+
+    private static void saveFileToResources(String fileName, String content, String fileExtension) throws IOException {
+        var saveDirectory = System.getProperty("user.dir") + File.separator + "src" + File.separator + "main" + File.separator + "resources";
+        var file = new File(saveDirectory, fileName + fileExtension);
+        if (!file.createNewFile())
+            throw new IOException("Ошибка при создании файла");
+
+        try(var writer = new FileWriter(file.getAbsolutePath(), false))
+        {
+            writer.write(content);
+            writer.flush();
+        }
+        catch(IOException exception){
+            throw new IOException("Ошибка при записи в файл");
+//            System.out.println(exception.getMessage());
+//            System.exit(-1);
         }
     }
 }
