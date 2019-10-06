@@ -1,9 +1,9 @@
 import java.util.Map;
 
 public class CurrenciesJsonModel {
-    private String Date;
-    private String PreviousDate;
-    private String PreviousURL;
-    private String TimeStamp;
-    private Map<String, CurrencyDataModel> Valute;
+    public String Date;
+    public String PreviousDate;
+    public String PreviousURL;
+    public String Timestamp;
+    public Map<String, CurrencyData> Valute;
 }

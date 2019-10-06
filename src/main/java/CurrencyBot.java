@@ -1,3 +1,7 @@
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -12,6 +16,10 @@ public class CurrencyBot extends TelegramLongPollingBot {
     private final static String helpMessage = "Hello, it's CurrencyBot!" +
             "\nI can show you some exchange rates. Use commands below:" +
             "\n/help - to show this message and view possible commands";
+
+    public CurrencyBot(DefaultBotOptions botOptions){
+        super(botOptions);
+    }
 
     @Override
     public void onUpdateReceived(Update update) {
@@ -88,5 +96,11 @@ public class CurrencyBot extends TelegramLongPollingBot {
 //            System.out.println(exception.getMessage());
 //            System.exit(-1);
         }
+    }
+
+    public static CurrenciesJsonModel getObjFromJson(String content) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+//        CurrenciesJsonModel data = mapper.readValue(content,  CurrenciesJsonModel.class);
+        return mapper.readValue(content,  CurrenciesJsonModel.class);
     }
 }
