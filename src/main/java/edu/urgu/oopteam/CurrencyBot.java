@@ -15,13 +15,14 @@ import java.io.*;
 
 
 public class CurrencyBot extends TelegramLongPollingBot {
-    private final static String helpMessage = "Привет, это CurrencyBot!" +
+    private final static String HELP_MESSAGE = "Привет, это CurrencyBot!" +
             "\nЯ могу показывать курсы валют. Используй команды ниже:" +
             "\n/help - показать это сообщение и список возможных команд" +
             "\n/curr {код валюты} - показать курс указанной валюты к рублю";
 
+//    private final static Map<String, String> currNameToCurrCode = Map.ofEntries(Map.entry("ДолларСША", "USD"));
+
     public CurrencyBot(){
-        super();
     }
 
     public CurrencyBot(DefaultBotOptions botOptions){
@@ -34,12 +35,12 @@ public class CurrencyBot extends TelegramLongPollingBot {
             var userMessage = update.getMessage().getText();
             var chatID = update.getMessage().getChatId();
 
-            if (userMessage.equals("/help") || userMessage.equals("/start")) {
-                sendMessage(chatID, helpMessage);
+            if ("/help".equals(userMessage) || "/start".equals(userMessage)) {
+                sendMessage(chatID, HELP_MESSAGE);
             }
             else if (userMessage.startsWith("/curr ")){
                 var message = userMessage.split(" ");
-                if (message.length > 2) {
+                if (message.length != 2) {
                     sendMessage(chatID, "У данной команды должен быть только 1 параметр - название валюты");
                     return;
                 }
@@ -49,10 +50,12 @@ public class CurrencyBot extends TelegramLongPollingBot {
                 try {
                     var data = mapper.readValue(fileService.readResourceFile("CurrenciesData.json"),  CurrenciesJsonModel.class);
 
+//                    if (data.Valute.containsKey(currNameToCurrCode.get(message[1])))
+//                        sendMessage(chatID, data.Valute.get(currNameToCurrCode.get(message[1])).Value+ " " + "RUB");
                     if (data.Valute.containsKey(message[1]))
-                        sendMessage(chatID, data.Valute.get(message[1]).Value);
+                        sendMessage(chatID, data.Valute.get(message[1]).Value+ " " + "RUB");
                     else
-                        sendMessage(chatID, "Нет такой валюты. СосатЬ!");
+                        sendMessage(chatID, "Нет такой валюты.");
 
                 } catch (IOException e) {
                     e.printStackTrace();

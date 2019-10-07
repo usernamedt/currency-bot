@@ -6,10 +6,13 @@ import org.telegram.telegrambots.meta.ApiContext;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.io.FileInputStream;
+import java.util.Properties;
+
 public class Main {
 
-    private static String PROXY_HOST = "179.43.157.119";
-    private static Integer PROXY_PORT = 1080;
+    private static final String PROXY_HOST = "179.43.157.119";
+    private static final int PROXY_PORT = 1080;
 
     public static void main(String[] args) {
         ApiContextInitializer.init();

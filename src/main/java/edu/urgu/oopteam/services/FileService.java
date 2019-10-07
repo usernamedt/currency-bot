@@ -5,6 +5,16 @@ import java.net.URL;
 
 public class FileService {
 
+    private static final class LazyHolder
+    {
+        private static final FileService INSTANCE = new FileService();
+    }
+
+    public static FileService getInstance()
+    {
+        return LazyHolder.INSTANCE;
+    }
+
     /**
      * Read file from resource folder
      * @param fileName filename

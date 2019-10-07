@@ -5,8 +5,9 @@
 # TOP SECRET
 /src/**/token.txt
 
-### Logs ###
+### Logs and configs###
 *.log
+*.properties
 
 ### Archives ###
 *.zip
