@@ -1,9 +1,9 @@
 package edu.urgu.oopteam;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import edu.urgu.oopteam.models.CurrenciesJsonModel;
+import edu.urgu.oopteam.services.ConfigurationSettings;
 import edu.urgu.oopteam.services.FileService;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -19,14 +19,17 @@ public class CurrencyBot extends TelegramLongPollingBot {
             "\nЯ могу показывать курсы валют. Используй команды ниже:" +
             "\n/help - показать это сообщение и список возможных команд" +
             "\n/curr {код валюты} - показать курс указанной валюты к рублю";
+    private ConfigurationSettings configSettings;
 
 //    private final static Map<String, String> currNameToCurrCode = Map.ofEntries(Map.entry("ДолларСША", "USD"));
 
-    public CurrencyBot(){
+    public CurrencyBot(ConfigurationSettings settings){
+        super();
+        configSettings = settings;
     }
-
-    public CurrencyBot(DefaultBotOptions botOptions){
+    public CurrencyBot(ConfigurationSettings settings, DefaultBotOptions botOptions){
         super(botOptions);
+        configSettings = settings;
     }
 
     @Override
@@ -44,11 +47,13 @@ public class CurrencyBot extends TelegramLongPollingBot {
                     sendMessage(chatID, "У данной команды должен быть только 1 параметр - название валюты");
                     return;
                 }
-                ObjectMapper mapper = new ObjectMapper();
 
+                var mapper = new ObjectMapper();
                 var fileService = new FileService();
                 try {
                     var data = mapper.readValue(fileService.readResourceFile("CurrenciesData.json"),  CurrenciesJsonModel.class);
+                    /* Скорее всего, лучше этот json потом переместить из ресурсов в отдельную директорию, в которой
+                    хранятся данные бота (и которая хранится в конфиг файле). */
 
 //                    if (data.Valute.containsKey(currNameToCurrCode.get(message[1])))
 //                        sendMessage(chatID, data.Valute.get(currNameToCurrCode.get(message[1])).Value+ " " + "RUB");
@@ -75,22 +80,18 @@ public class CurrencyBot extends TelegramLongPollingBot {
 
     @Override
     public String getBotUsername() {
-        return "CurrencySuperBot";
+        return configSettings.getBotUserName();
     }
 
     @Override
     public String getBotToken() {
-        try {
-            var fileService = new FileService();
-            return fileService.readResourceFile("token.txt");
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    public static CurrenciesJsonModel getObjFromJson(String content) throws JsonProcessingException {
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.readValue(content,  CurrenciesJsonModel.class);
+        return configSettings.getBotToken();
+//        try {
+//            var fileService = new FileService();
+//            return fileService.readResourceFile("token.txt");
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//            return null;
+//        }
     }
 }
