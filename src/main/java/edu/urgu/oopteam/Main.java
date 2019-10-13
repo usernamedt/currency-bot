@@ -16,10 +16,10 @@ public class Main {
         // Set up Http proxy
         DefaultBotOptions botOptions = ApiContext.getInstance(DefaultBotOptions.class);
 
-        botOptions.setProxyHost(settings.getProxyHost());
-        botOptions.setProxyPort(settings.getProxyPort());
-        // Select proxy type: [HTTP|SOCKS4|SOCKS5] (default: NO_PROXY)
-        botOptions.setProxyType(DefaultBotOptions.ProxyType.SOCKS5);
+        //botOptions.setProxyHost(settings.getProxyHost());
+        //botOptions.setProxyPort(settings.getProxyPort());
+        //// Select proxy type: [HTTP|SOCKS4|SOCKS5] (default: NO_PROXY)
+        //botOptions.setProxyType(DefaultBotOptions.ProxyType.SOCKS5);
 
         try {
             botsApi.registerBot(new CurrencyBot(settings, botOptions));

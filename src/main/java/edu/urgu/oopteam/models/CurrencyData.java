@@ -1,11 +1,27 @@
 package edu.urgu.oopteam.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class CurrencyData {
-    public String ID;
-    public String NumCode;
-    public  String CharCode;
-    public String Nominal;
-    public String Name;
-    public String Value;
-    public String Previous;
+    @JsonProperty("ID")
+    private String id;
+    @JsonProperty("NumCode")
+    private String numCode;
+    @JsonProperty("CharCode")
+    private  String charCode;
+    @JsonProperty("Nominal")
+    private String nominal;
+    @JsonProperty("Name")
+    private String name;
+    @JsonProperty("Value")
+    private String value;
+    @JsonProperty("Previous")
+    private String previous;
+
+    public String getName(){
+        return this.name;
+    }
+    public String getValue(){
+        return this.value;
+    }
 }
