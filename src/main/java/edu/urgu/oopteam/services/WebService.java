@@ -6,7 +6,7 @@ import java.net.URL;
 import java.net.URLConnection;
 
 public class WebService {
-    private static String getPageContent(String pageAddress, String codePage) throws Exception {
+    public static String getPageContent(String pageAddress, String codePage) throws Exception {
         StringBuilder sb = new StringBuilder();
         URL pageURL = new URL(pageAddress);
         URLConnection uc = pageURL.openConnection();
