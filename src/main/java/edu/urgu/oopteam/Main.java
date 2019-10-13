@@ -23,7 +23,6 @@ public class Main {
 
         try {
             botsApi.registerBot(new CurrencyBot(settings, botOptions));
-//            botsApi.registerBot(new CurrencyBot(settings));
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }

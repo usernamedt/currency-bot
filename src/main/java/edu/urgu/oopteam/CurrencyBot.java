@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import edu.urgu.oopteam.models.CurrenciesJsonModel;
-import edu.urgu.oopteam.models.CurrencyData;
 import edu.urgu.oopteam.services.ConfigurationSettings;
 import edu.urgu.oopteam.services.FileService;
 import edu.urgu.oopteam.services.WebService;
@@ -15,8 +14,6 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Logger;
 
 
@@ -27,7 +24,7 @@ public class CurrencyBot extends TelegramLongPollingBot {
             "\n/curr {код валюты} - показать курс указанной валюты к рублю";
     private ConfigurationSettings configSettings;
     private CurrenciesJsonModel currModel;
-    final static Logger logger = Logger.getLogger(CurrencyBot.class.getCanonicalName());
+    private final static Logger LOGGER = Logger.getLogger(CurrencyBot.class.getCanonicalName());
 
     public CurrencyBot(ConfigurationSettings settings){
         super();
@@ -44,13 +41,13 @@ public class CurrencyBot extends TelegramLongPollingBot {
             try {
                 currModel = mapper.readValue(fileService.readResourceFile("CurrenciesData.json"), CurrenciesJsonModel.class);
             } catch (Exception e) {
-                this.logger.info("Error while parsing json file");
+                LOGGER.info("Error while parsing json file");
                 e.printStackTrace();
             }
         }
         else{
             var webPage = WebService.getPageContent("https://www.cbr-xml-daily.ru/daily_json.js", "UTF-8");
-            FileService.saveFile("CurrenciesData", "src" + File.separator + "main" + File.separator + "resources","",".json");
+            FileService.saveFile("CurrenciesData", "src" + File.separator + "main" + File.separator + "resources", webPage,".json");
             currModel = mapper.readValue(fileService.readResourceFile("CurrenciesData.json"), CurrenciesJsonModel.class);
         }
     }
@@ -72,8 +69,8 @@ public class CurrencyBot extends TelegramLongPollingBot {
                 }
 
                 /* Позже тут должна быть проверка на то, что пора обновить json файл */
-                if (currModel.HasValute(message[1])){
-                    sendMessage(chatID, currModel.GetExchangeRate(message[1]) + " " + "RUB");
+                if (currModel.hasValute(message[1])){
+                    sendMessage(chatID, currModel.getExchangeRate(message[1]) + " RUB");
                 }
                 else sendMessage(chatID, "Я не знаю такой валюты, проверьте наличие такой валюты в списке поддерживаемых");
             }
@@ -88,7 +85,7 @@ public class CurrencyBot extends TelegramLongPollingBot {
         try {
             execute(reply);
         } catch (TelegramApiException e) {
-            this.logger.info("Error while sending message to client");
+            LOGGER.info("Error while sending message to client");
             e.printStackTrace();
         }
     }
@@ -108,7 +105,7 @@ public class CurrencyBot extends TelegramLongPollingBot {
         try {
             return mapper.readValue(content, CurrenciesJsonModel.class);
         } catch (JsonProcessingException e) {
-            this.logger.info("Error while parsing json file");
+            LOGGER.info("Error while parsing json file");
             e.printStackTrace();
 //            System.exit(-1);
         }

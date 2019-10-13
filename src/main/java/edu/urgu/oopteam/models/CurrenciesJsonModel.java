@@ -2,7 +2,6 @@ package edu.urgu.oopteam.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -26,29 +25,23 @@ public class CurrenciesJsonModel {
         return resultDict;
     }
 
-    public boolean HasValute(String currencyCode){
-        if (this.GetValuteMap().containsKey(currencyCode.toUpperCase()))
+    public boolean hasValute(String currencyCode){
+        if (valute.containsKey(currencyCode.toUpperCase()))
             return true;
-        for (CurrencyData currency: this.GetValuteMap().values()) {
+        for (CurrencyData currency: valute.values()) {
             if (currency.getName().toLowerCase().equals(currencyCode.toLowerCase()))
                 return true;
         }
         return false;
     }
 
-    public String GetExchangeRate(String currencyCode){
-        if (this.GetValuteMap().containsKey(currencyCode.toUpperCase()))
-            return this.GetValuteMap().get(currencyCode.toUpperCase()).getValue();
-        for (CurrencyData currency: this.GetValuteMap().values()) {
+    public String getExchangeRate(String currencyCode){
+        if (valute.containsKey(currencyCode.toUpperCase()))
+            return valute.get(currencyCode.toUpperCase()).getValue();
+        for (CurrencyData currency: valute.values()) {
             if (currency.getName().toLowerCase().equals(currencyCode.toLowerCase()))
                 return currency.getValue();
         }
         return "";
     }
-
-    public Map<String, CurrencyData> GetValuteMap(){
-        return this.valute;
-    }
-
-
 }
