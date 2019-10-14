@@ -52,31 +52,6 @@ public class FileService {
         catch(IOException ex){
             throw new IOException("Ошибка при записи в файл");
 //            System.out.println(ex.getMessage());
-//            System.exit(-1);
         }
     }
-
-//    /**
-//     * Save file to resource folder
-//     * @param fileName filename
-//     * @param content file content
-//     * @param fileExtension file extension
-//     */
-//    private static void saveResourceFile(String fileName, String content, String fileExtension) throws IOException {
-//        var saveDirectory = System.getProperty("user.dir") + File.separator + "src" + File.separator + "main" + File.separator + "resources";
-//        var file = new File(saveDirectory, fileName + fileExtension);
-//        if (!file.createNewFile())
-//            throw new IOException("Ошибка при создании файла");
-//
-//        try(var writer = new FileWriter(file.getAbsolutePath(), false))
-//        {
-//            writer.write(content);
-//            writer.flush();
-//        }
-//        catch(IOException exception){
-//            throw new IOException("Ошибка при записи в файл");
-////            System.out.println(exception.getMessage());
-////            System.exit(-1);
-//        }
-//    }
 }

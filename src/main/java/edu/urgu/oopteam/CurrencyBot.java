@@ -16,7 +16,6 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import java.io.*;
 import java.util.logging.Logger;
 
-
 public class CurrencyBot extends TelegramLongPollingBot {
     private final static String HELP_MESSAGE = "Привет, это CurrencyBot!" +
             "\nЯ могу показывать курсы валют. Используй команды ниже:" +
@@ -35,21 +34,8 @@ public class CurrencyBot extends TelegramLongPollingBot {
         configSettings = settings;
 
         var mapper = new ObjectMapper();
-        var fileService = new FileService();
-        var file = new File(System.getProperty("user.dir") + File.separator + "src" + File.separator + "main" + File.separator + "resources" + File.separator + "CurrenciesData.json");
-        if (file.exists()){
-            try {
-                currModel = mapper.readValue(fileService.readResourceFile("CurrenciesData.json"), CurrenciesJsonModel.class);
-            } catch (Exception e) {
-                LOGGER.info("Error while parsing json file");
-                e.printStackTrace();
-            }
-        }
-        else{
-            var webPage = WebService.getPageContent("https://www.cbr-xml-daily.ru/daily_json.js", "UTF-8");
-            FileService.saveFile("CurrenciesData", "src" + File.separator + "main" + File.separator + "resources", webPage,".json");
-            currModel = mapper.readValue(fileService.readResourceFile("CurrenciesData.json"), CurrenciesJsonModel.class);
-        }
+        var webPage = WebService.getPageContent("https://www.cbr-xml-daily.ru/daily_json.js", "UTF-8");
+        currModel = mapper.readValue(webPage, CurrenciesJsonModel.class);
     }
 
     @Override
@@ -69,8 +55,9 @@ public class CurrencyBot extends TelegramLongPollingBot {
                 }
 
                 /* Позже тут должна быть проверка на то, что пора обновить json файл */
-                if (currModel.hasValute(message[1])){
-                    sendMessage(chatID, currModel.getExchangeRate(message[1]) + " RUB");
+                var exRate = currModel.getExchangeRate(message[1]);
+                if (exRate != null){
+                    sendMessage(chatID,exRate + " RUB");
                 }
                 else sendMessage(chatID, "Я не знаю такой валюты, проверьте наличие такой валюты в списке поддерживаемых");
             }
