@@ -22,7 +22,7 @@ public class Main {
         //botOptions.setProxyType(DefaultBotOptions.ProxyType.SOCKS5);
 
         try {
-            botsApi.registerBot(new CurrencyBot(settings, botOptions));
+            botsApi.registerBot(new TelegramCurrencyBot(settings, botOptions));
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
