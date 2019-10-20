@@ -8,6 +8,10 @@ import edu.urgu.oopteam.services.WebService;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 public class CurrencyBot {
@@ -19,6 +23,7 @@ public class CurrencyBot {
     private final static Logger LOGGER = Logger.getLogger(CurrencyBot.class.getCanonicalName());
     private IMessenger messenger;
     private CurrenciesJsonModel currModel;
+    private ExecutorService pool;
 
     public CurrencyBot(IMessenger messenger){
         this.messenger = messenger;
@@ -35,9 +40,11 @@ public class CurrencyBot {
             }
         };
         jsonUpdateTimer.scheduleAtFixedRate(jsonUpdateTask, new Date(), 1000 * 60 * 60 * 4);
+
+        pool = Executors.newFixedThreadPool(200);
     }
 
-    public void processMessage(Long chatID, String userMessage) {
+    private void processMessage(Long chatID, String userMessage) {
         if ("/help".equals(userMessage) || "/start".equals(userMessage)) {
             messenger.sendMessage(chatID, HELP_MESSAGE);
         }
@@ -56,6 +63,10 @@ public class CurrencyBot {
         else {
             messenger.sendMessage(chatID, "Я Вас не понимаю, проверьте соответствие команды одной из перечисленных в /help");
         }
+    }
+
+    public void processMessageAsync(Long chatID, String userMessage){
+        CompletableFuture.runAsync(() -> processMessage(chatID, userMessage), pool);
     }
 
     private boolean tryUpdateJsonModel() {

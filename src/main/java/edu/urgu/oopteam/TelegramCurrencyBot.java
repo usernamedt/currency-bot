@@ -33,7 +33,7 @@ public class TelegramCurrencyBot extends TelegramLongPollingBot implements IMess
         if (update.hasMessage() && update.getMessage().hasText()) {
             var userMessage = update.getMessage().getText();
             var chatID = update.getMessage().getChatId();
-           bot.processMessage(chatID, userMessage);
+           bot.processMessageAsync(chatID, userMessage);
         }
     }
 
