@@ -8,10 +8,7 @@ import edu.urgu.oopteam.services.WebService;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.logging.Logger;
 
 public class CurrencyBot {
@@ -23,10 +20,8 @@ public class CurrencyBot {
     private final static Logger LOGGER = Logger.getLogger(CurrencyBot.class.getCanonicalName());
     private IMessenger messenger;
     private CurrenciesJsonModel currModel;
-    private ExecutorService pool;
 
-    public CurrencyBot(IMessenger messenger){
-        this.messenger = messenger;
+    public CurrencyBot(){
 
         var jsonUpdateTimer = new Timer();
         var jsonUpdateTask = new TimerTask() {
@@ -41,32 +36,26 @@ public class CurrencyBot {
         };
         jsonUpdateTimer.scheduleAtFixedRate(jsonUpdateTask, new Date(), 1000 * 60 * 60 * 4);
 
-        pool = Executors.newFixedThreadPool(200);
     }
 
-    private void processMessage(Long chatID, String userMessage) {
+    public String processMessage(String userMessage) {
         if ("/help".equals(userMessage) || "/start".equals(userMessage)) {
-            messenger.sendMessage(chatID, HELP_MESSAGE);
+            return HELP_MESSAGE;
         }
         else if (userMessage.startsWith("/curr ")){
             var message = userMessage.split(" ", 2);
             if (message.length != 2) {
-                messenger.sendMessage(chatID, "У данной команды должен быть 1 параметр - название валюты");
-                return;
+                return "У данной команды должен быть 1 параметр - название валюты";
             }
             var exRate = currModel.getExchangeRate(message[1]);
             if (exRate != null){
-                messenger.sendMessage(chatID,exRate + " RUB");
+                return exRate + " RUB";
             }
-            else messenger.sendMessage(chatID, "Я не знаю такой валюты, проверьте наличие такой валюты в списке поддерживаемых");
+            else return "Я не знаю такой валюты, проверьте наличие такой валюты в списке поддерживаемых";
         }
         else {
-            messenger.sendMessage(chatID, "Я Вас не понимаю, проверьте соответствие команды одной из перечисленных в /help");
+            return "Я Вас не понимаю, проверьте соответствие команды одной из перечисленных в /help";
         }
-    }
-
-    public void processMessageAsync(Long chatID, String userMessage){
-        CompletableFuture.runAsync(() -> processMessage(chatID, userMessage), pool);
     }
 
     private boolean tryUpdateJsonModel() {

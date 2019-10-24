@@ -15,17 +15,21 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
 public class TelegramCurrencyBot extends TelegramLongPollingBot implements IMessenger {
     private final static Logger LOGGER = Logger.getLogger(TelegramCurrencyBot.class.getCanonicalName());
     private ConfigurationSettings configSettings;
     private CurrencyBot bot;
+    private ExecutorService pool = Executors.newFixedThreadPool(200);
 
     public TelegramCurrencyBot(ConfigurationSettings settings, DefaultBotOptions botOptions) {
         super(botOptions);
         configSettings = settings;
-        bot = new CurrencyBot(this);
+        bot = new CurrencyBot();
     }
 
     @Override
@@ -33,7 +37,7 @@ public class TelegramCurrencyBot extends TelegramLongPollingBot implements IMess
         if (update.hasMessage() && update.getMessage().hasText()) {
             var userMessage = update.getMessage().getText();
             var chatID = update.getMessage().getChatId();
-           bot.processMessageAsync(chatID, userMessage);
+            processMessageAsync(chatID, userMessage);
         }
     }
 
@@ -47,6 +51,9 @@ public class TelegramCurrencyBot extends TelegramLongPollingBot implements IMess
         }
     }
 
+    public void processMessageAsync(Long chatID, String userMessage){
+        CompletableFuture.runAsync(() -> sendMessage(chatID, bot.processMessage(userMessage)), pool);
+    }
 
     @Override
     public String getBotUsername() {
