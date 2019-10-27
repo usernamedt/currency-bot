@@ -1,6 +1,8 @@
 package edu.urgu.oopteam.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.sun.istack.Nullable;
+import javassist.NotFoundException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,13 +27,13 @@ public class CurrenciesJsonModel {
         return resultDict;
     }
 
-    public String getExchangeRate(String currencyCode){
+    public double getExchangeRate(String currencyCode) throws NotFoundException {
         if (currencyDataMap.containsKey(currencyCode.toUpperCase()))
-            return currencyDataMap.get(currencyCode.toUpperCase()).getValue();
+            return Double.parseDouble(currencyDataMap.get(currencyCode.toUpperCase()).getValue());
         for (CurrencyData currency: currencyDataMap.values()) {
             if (currency.getName().equalsIgnoreCase(currencyCode))
-                return currency.getValue();
+                return Double.parseDouble(currency.getValue());
         }
-        return null;
+        throw new NotFoundException("Не найдено валюты с указанным кодом.");
     }
 }

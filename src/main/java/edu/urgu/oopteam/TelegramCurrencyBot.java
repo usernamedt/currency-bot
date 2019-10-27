@@ -6,6 +6,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.urgu.oopteam.models.CurrenciesJsonModel;
 import edu.urgu.oopteam.services.ConfigurationSettings;
 import edu.urgu.oopteam.services.WebService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -16,20 +19,21 @@ import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
-public class TelegramCurrencyBot extends TelegramLongPollingBot implements IMessenger {
+public class TelegramCurrencyBot extends TelegramLongPollingBot {
     private final static Logger LOGGER = Logger.getLogger(TelegramCurrencyBot.class.getCanonicalName());
     private ConfigurationSettings configSettings;
     private CurrencyBot bot;
     private ExecutorService pool = Executors.newFixedThreadPool(200);
 
-    public TelegramCurrencyBot(ConfigurationSettings settings, DefaultBotOptions botOptions) {
+    public TelegramCurrencyBot(ConfigurationSettings settings, DefaultBotOptions botOptions, ApplicationContext context) {
         super(botOptions);
         configSettings = settings;
-        bot = new CurrencyBot();
+        bot = new CurrencyBot(context);
     }
 
     @Override
@@ -52,7 +56,7 @@ public class TelegramCurrencyBot extends TelegramLongPollingBot implements IMess
     }
 
     public void processMessageAsync(Long chatID, String userMessage){
-        CompletableFuture.runAsync(() -> sendMessage(chatID, bot.processMessage(userMessage)), pool);
+        CompletableFuture.runAsync(() -> sendMessage(chatID, bot.processMessage(userMessage, chatID)), pool);
     }
 
     @Override
