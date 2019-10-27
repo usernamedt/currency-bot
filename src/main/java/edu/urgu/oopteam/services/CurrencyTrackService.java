@@ -19,15 +19,14 @@ public class CurrencyTrackService implements ICurrencyTrackService {
 
     @Override
     public List<CurrencyTrackRequest> findAll() {
-        var trackRequests = (List<CurrencyTrackRequest>) currencyTrackRequestRepository.findAll();
-        return trackRequests;
+        return currencyTrackRequestRepository.findAll();
     }
 
     @Override
     public List<CurrencyTrackRequest> findAllByChatId(long chatId){
-        var trackRequest = findAll();
+        var trackRequests = findAll();
         var result = new ArrayList<CurrencyTrackRequest>();
-        for (var request : trackRequest) {
+        for (var request : trackRequests) {
             if (request.getChatId() == chatId) {
                 result.add(request);
             }
@@ -59,6 +58,4 @@ public class CurrencyTrackService implements ICurrencyTrackService {
         }
         return null;
     }
-
-
 }

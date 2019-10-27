@@ -14,17 +14,18 @@ import org.springframework.context.ApplicationContext;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 public class CurrencyBot {
-    private final static String HELP_MESSAGE = "Привет, это edu.urgu.oopteam.CurrencyBot!" +
+    private final static String HELP_MESSAGE = "Привет, это Currency Bot!" +
             "\nЯ могу показывать курсы валют. Используй команды ниже:" +
             "\n/help - показать это сообщение и список возможных команд" +
             "\n/curr {код валюты} - показать курс указанной валюты к рублю" +
             "\n/track {код валюты} {дельта} - отслеживать курс указанной валюты и уведомлять при отклонении больше дельты" +
             "\n/allTracked - вывести все текущие отслеживаемые валюты";
     private final static String JSON_PAGE_ADDRESS = "https://www.cbr-xml-daily.ru/daily_json.js";
-    private final static Logger LOGGER = Logger.getLogger(CurrencyBot.class.getCanonicalName());
+//    private final static Logger LOGGER = Logger.getLogger(CurrencyBot.class.getCanonicalName());
+    private static final Logger LOGGER = Logger.getLogger(CurrencyBot.class);
     private CurrenciesJsonModel currModel;
     @Autowired
     private ICurrencyTrackService currencyTrackService;
@@ -38,7 +39,7 @@ public class CurrencyBot {
                 tryUpdateJsonModel();
               /* Потом тут в случае неудачи нужно будет отправить сообщение всем пользователям бота,
                что обновить данные не удалось, и они получат несколько устаревшие данные.
-                Для реализации этого нужно хранить где-то(например в json) все id пользователей, которые уже
+                Для реализации этого нужно хранить где-то(в БД) все id пользователей, которые уже
                 используют бота */
             }
         };
@@ -96,11 +97,9 @@ public class CurrencyBot {
             currModel = mapper.readValue(webPage, CurrenciesJsonModel.class);
             return true;
         } catch (JsonProcessingException jException) {
-            LOGGER.info("Error while building CurrenciesJsonModel instance");
-            jException.printStackTrace();
+            LOGGER.error("Error while building CurrenciesJsonModel instance", jException);
         } catch (Exception e) {
-            LOGGER.info("Error while downloading page");
-            e.printStackTrace();
+            LOGGER.error("Error while downloading page", e);
         }
         return false;
     }
