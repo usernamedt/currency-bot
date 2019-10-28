@@ -11,8 +11,6 @@ public class ConfigurationSettings {
     private String botUserName;
     private String botToken;
     private String botDataDir;
-    private String proxyHost;
-    private int proxyPort;
 
     public ConfigurationSettings() {
         var props = new Properties();
@@ -28,14 +26,6 @@ public class ConfigurationSettings {
         botUserName = props.getProperty("bot.name");
         botToken = props.getProperty("bot.token");
         botDataDir = props.getProperty("bot.data.directory");
-        proxyHost = props.getProperty("proxy.host");
-
-        try {
-            proxyPort = Integer.parseInt(props.getProperty("proxy.port"));
-        } catch (NumberFormatException exception) {
-            System.out.println("Порт прокси должен быть типа int");
-            exception.printStackTrace();
-        }
     }
 
     public String getBotUserName(){
@@ -46,11 +36,5 @@ public class ConfigurationSettings {
     }
     public String getBotDataDir(){
         return botDataDir;
-    }
-    public String getProxyHost(){
-        return proxyHost;
-    }
-    public int getProxyPort(){
-        return proxyPort;
     }
 }

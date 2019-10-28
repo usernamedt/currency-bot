@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.urgu.oopteam.models.CurrenciesJsonModel;
 import edu.urgu.oopteam.services.ConfigurationSettings;
 import edu.urgu.oopteam.services.WebService;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
@@ -22,16 +23,15 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.logging.Logger;
 
 public class TelegramCurrencyBot extends TelegramLongPollingBot {
-    private final static Logger LOGGER = Logger.getLogger(TelegramCurrencyBot.class.getCanonicalName());
+    private final static Logger LOGGER = Logger.getLogger(TelegramCurrencyBot.class);
     private ConfigurationSettings configSettings;
     private CurrencyBot bot;
     private ExecutorService pool = Executors.newFixedThreadPool(200);
 
-    public TelegramCurrencyBot(ConfigurationSettings settings, DefaultBotOptions botOptions, ApplicationContext context) {
-        super(botOptions);
+    public TelegramCurrencyBot(ConfigurationSettings settings, ApplicationContext context) {
+        super();
         configSettings = settings;
         bot = new CurrencyBot(context);
     }
@@ -50,7 +50,7 @@ public class TelegramCurrencyBot extends TelegramLongPollingBot {
         try {
             execute(reply);
         } catch (TelegramApiException e) {
-            LOGGER.info("Error while sending message to client");
+            LOGGER.error("Error while sending message to client");
             e.printStackTrace();
         }
     }

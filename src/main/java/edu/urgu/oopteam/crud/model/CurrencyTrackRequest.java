@@ -11,13 +11,19 @@ import javax.persistence.Table;
 @Table(name = "currencytrackrequests")
 public class CurrencyTrackRequest {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
+    @Column(name = "chat_id", nullable = false)
     private long chatId;
-    // exchange rate for currency on the time of request
+    // exchange rate for currency on the time of
+    @Column(name = "base_rate", nullable = false)
     private double baseRate;
     // currency name
+    @Column(name = "currency_name", nullable = false)
     private String currencyCode;
     // delta
+    @Column(name = "delta", nullable = false)
     private double delta;
 
     public CurrencyTrackRequest() {
@@ -31,8 +37,7 @@ public class CurrencyTrackRequest {
         this.delta = delta;
     }
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+
     public long getId() {
         return id;
     }
@@ -41,7 +46,7 @@ public class CurrencyTrackRequest {
         this.id = id;
     }
 
-    @Column(name = "chat_id", nullable = false)
+
     public long getChatId() {
         return chatId;
     }
@@ -50,7 +55,7 @@ public class CurrencyTrackRequest {
         this.chatId = chatId;
     }
 
-    @Column(name = "base_rate", nullable = false)
+
     public double getBaseRate() {
         return baseRate;
     }
@@ -59,7 +64,7 @@ public class CurrencyTrackRequest {
         this.baseRate = baseRate;
     }
 
-    @Column(name = "currency_name", nullable = false)
+
     public String getCurrencyCode() {
         return currencyCode;
     }
@@ -68,7 +73,7 @@ public class CurrencyTrackRequest {
         this.currencyCode = currencyCode;
     }
 
-    @Column(name = "delta", nullable = false)
+
     public double getDelta() {
         return delta;
     }

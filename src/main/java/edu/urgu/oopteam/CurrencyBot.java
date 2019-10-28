@@ -2,7 +2,6 @@ package edu.urgu.oopteam;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.urgu.oopteam.crud.model.CurrencyTrackRequest;
 import edu.urgu.oopteam.models.CurrenciesJsonModel;
 import edu.urgu.oopteam.services.CurrencyTrackService;
 import edu.urgu.oopteam.services.ICurrencyTrackService;
@@ -11,6 +10,7 @@ import javassist.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
+import java.sql.SQLException;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -22,6 +22,7 @@ public class CurrencyBot {
             "\n/help - показать это сообщение и список возможных команд" +
             "\n/curr {код валюты} - показать курс указанной валюты к рублю" +
             "\n/track {код валюты} {дельта} - отслеживать курс указанной валюты и уведомлять при отклонении больше дельты" +
+            "\n/untrack {код валюты} - перестать отслеживать указанную валюту" +
             "\n/allTracked - вывести все текущие отслеживаемые валюты";
     private final static String JSON_PAGE_ADDRESS = "https://www.cbr-xml-daily.ru/daily_json.js";
 //    private final static Logger LOGGER = Logger.getLogger(CurrencyBot.class.getCanonicalName());
@@ -50,43 +51,82 @@ public class CurrencyBot {
     public String processMessage(String userMessage, long chatId) {
         if ("/help".equals(userMessage) || "/start".equals(userMessage)) {
             return HELP_MESSAGE;
-        } else if (userMessage.startsWith("/curr ")) {
-            var message = userMessage.split(" ", 2);
-            if (message.length != 2) {
-                return "У данной команды должен быть 1 параметр - название валюты";
-            }
-            try {
-                double exRate = currModel.getExchangeRate(message[1]);
-                return exRate + " RUB";
-            } catch (NotFoundException e) {
-                return "Я не знаю такой валюты, проверьте наличие такой валюты в списке поддерживаемых";
-            }
-        } else if (userMessage.startsWith("/track ")) {
-            var args = userMessage.split(" ", 3);
-            if (args.length != 3) {
-                return "У данной команды должно быть 2 параметра - код валюты и дельта";
-            }
-            var currencyCode = args[1].toLowerCase();
-            var delta = Double.parseDouble(args[2]);
-            double currExchangeRate;
-            try {
-                currExchangeRate = currModel.getExchangeRate(currencyCode);
-            } catch (NotFoundException e) {
-                return e.getMessage();
-            }
 
-            var trackedCurrency = currencyTrackService.findTrackedCurrency(chatId, currencyCode);
-            if (trackedCurrency != null) {
-                currencyTrackService.updateTrackedCurrency(trackedCurrency, delta, currExchangeRate);
-                return "Обновил существующий запрос \n" + trackedCurrency.toString();
-            }
-            var trackRequest = currencyTrackService.addTrackedCurrency(chatId, currExchangeRate, currencyCode, delta);
-            return "Создал новый запрос... \n" + trackRequest.toString();
+        } else if (userMessage.startsWith("/curr ")) {
+            return handleCurrCommand(userMessage);
+
+        } else if (userMessage.startsWith("/track ")) {
+            return handleTrackCommand(chatId, userMessage);
+
+        } else if (userMessage.startsWith("/untrack ")) {
+            return handleUntrackCommand(chatId, userMessage);
+
         } else if (userMessage.equals("/allTracked")) {
             var userRequests = currencyTrackService.findAllByChatId(chatId);
             return "Ваши текущие запросы на отслеживание:\n" + userRequests.toString();
         } else {
             return "Я Вас не понимаю, проверьте соответствие команды одной из перечисленных в /help";
+        }
+    }
+
+    private String handleCurrCommand(String userMessage) {
+        var message = userMessage.split(" ", 2);
+        if (message.length != 2) {
+            return "У данной команды должен быть 1 параметр - название валюты";
+        }
+        try {
+            double exRate = currModel.getExchangeRate(message[1]);
+            return exRate + " RUB";
+        } catch (NotFoundException e) {
+            return "Я не знаю такой валюты, проверьте наличие такой валюты в списке поддерживаемых";
+        }
+    }
+
+    private String handleTrackCommand(long chatId, String userMessage) {
+        var args = userMessage.split(" ", 3);
+        if (args.length != 3) {
+            return "У данной команды должно быть 2 параметра - код валюты и дельта";
+        }
+        var currencyCode = args[1].toLowerCase();
+        var delta = Double.parseDouble(args[2]);
+        double currExchangeRate;
+        try {
+            currExchangeRate = currModel.getExchangeRate(currencyCode);
+        } catch (NotFoundException e) {
+            return e.getMessage();
+        }
+
+        try {
+            var trackedCurrency = currencyTrackService.findTrackedCurrency(chatId, currencyCode);
+            if (trackedCurrency != null) {
+                currencyTrackService.updateTrackedCurrency(trackedCurrency, delta, currExchangeRate);
+                return "Обновил существующий запрос \n" + trackedCurrency.toString();
+            }
+        } catch (SQLException e) {
+            LOGGER.error(e.getMessage());
+            return "Внутренняя ошибка бота, попробуйте использовать эту команду позже";
+        }
+        var trackRequest = currencyTrackService.addTrackedCurrency(chatId, currExchangeRate, currencyCode, delta);
+        return "Создал новый запрос... \n" + trackRequest.toString();
+    }
+
+    private String handleUntrackCommand(long chatId, String userMessage) {
+        var args = userMessage.split(" ", 2);
+        if (args.length != 2) {
+            return "У данной команды должен быть 1 параметр - код валюты, которую вы хотите перестать отслеживать";
+        }
+        var currencyCode = args[1];
+        try {
+            var trackedCurrency = currencyTrackService.findTrackedCurrency(chatId, currencyCode);
+            if (trackedCurrency == null) {
+                return "Такая валюта в данный момент не отслеживается. Чтобы посмотреть список отслеживаемых валют, " +
+                        "воспольуйтесь командой /allTracked";
+            }
+            currencyTrackService.deleteTrackedCurrency(trackedCurrency);
+            return "Отслеживание по данной записи успешно отменено.\n" + trackedCurrency.toString();
+        } catch (SQLException e) {
+            LOGGER.error(e.getMessage());
+            return "Внутренняя ошибка бота, попробуйте использовать эту команду позже";
         }
     }
 

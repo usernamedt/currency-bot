@@ -22,11 +22,8 @@ public class Main {
         TelegramBotsApi botsApi = new TelegramBotsApi();
         var settings = new ConfigurationSettings();
 
-        // Set up Http proxy
-        DefaultBotOptions botOptions = ApiContext.getInstance(DefaultBotOptions.class);
-
         try {
-            botsApi.registerBot(new TelegramCurrencyBot(settings, botOptions, applicationContext));
+            botsApi.registerBot(new TelegramCurrencyBot(settings, applicationContext));
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
