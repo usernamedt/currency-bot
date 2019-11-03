@@ -7,7 +7,6 @@ import edu.urgu.oopteam.services.CurrencyTrackService;
 import edu.urgu.oopteam.services.ICurrencyTrackService;
 import edu.urgu.oopteam.services.WebService;
 import javassist.NotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
 import java.sql.SQLException;
@@ -21,10 +20,6 @@ import java.util.concurrent.Executors;
 import org.apache.log4j.Logger;
 
 public class CurrencyBot {
-    public static void init(ApplicationContext context, TelegramCurrencyBot telegramBot){
-        new CurrencyBot(context, telegramBot);
-    }
-
     private final static String HELP_MESSAGE = "Привет, это Currency Bot!" +
             "\nЯ могу показывать курсы валют. Используй команды ниже:" +
             "\n/help - показать это сообщение и список возможных команд" +
@@ -49,7 +44,7 @@ public class CurrencyBot {
             public void run() {
                 var success = tryUpdateJsonModel();
                 if (success) {
-                    notifyUsers();
+                    notifyTrackedUsers();
                 }
                 /* Потом тут в случае неудачи нужно будет отправить сообщение всем пользователям бота,
                 что обновить данные не удалось, и они получат несколько устаревшие данные.
@@ -57,29 +52,36 @@ public class CurrencyBot {
                 используют бота */
             }
         };
-        jsonUpdateTimer.scheduleAtFixedRate(jsonUpdateTask, new Date(), 1000 * 60 * 60 * 4);
-//        jsonUpdateTimer.scheduleAtFixedRate(jsonUpdateTask, new Date(), 1000 * 10);
+        jsonUpdateTimer.scheduleAtFixedRate(jsonUpdateTask, new Date(), 1000 * 60 * 60 * 1);
         currencyTrackService = context.getBean(CurrencyTrackService.class);
         messenger.setUpdateHandler(this::processMessageAsync);
     }
 
-    private void notifyUsers() {
+    public static void init(ApplicationContext context, TelegramCurrencyBot telegramBot) {
+        new CurrencyBot(context, telegramBot);
+    }
+
+    private void notifyTrackedUsers() {
         var requests = currencyTrackService.findAll();
         requests.forEach(request -> {
-            try{
+            try {
                 var currentRate = currModel.getExchangeRate(request.getCurrencyCode());
                 var currentDelta = currentRate - request.getBaseRate();
-                if (currentDelta - request.getDelta() >= 0) {
-                    CompletableFuture.runAsync(() -> messenger.sendMessage(request.getChatId(),
-                            "Курс отслеживаемой вами валюты изменился "+ request.getCurrencyCode()));
+                if (request.getDelta() * (currentDelta - request.getDelta()) >= 0) {
+                    CompletableFuture.runAsync(() -> {
+                                messenger.sendMessage(request.getChatId(),
+                                        "Курс отслеживаемой вами валюты изменился " + request.getCurrencyCode());
+                                currencyTrackService.deleteTrackedCurrency(request);
+                            }
+                            , pool);
                 }
-            } catch (NotFoundException e){
+            } catch (NotFoundException e) {
                 LOGGER.error(e.getMessage());
             }
         });
     }
 
-    private void processMessageAsync(Long chatID, String userMessage){
+    private void processMessageAsync(Long chatID, String userMessage) {
         CompletableFuture.runAsync(() -> processMessage(chatID, userMessage), pool);
     }
 

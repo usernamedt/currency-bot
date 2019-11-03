@@ -12,7 +12,7 @@ import javax.persistence.Table;
 public class CurrencyTrackRequest {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
     @Column(name = "chat_id", nullable = false)
     private long chatId;
