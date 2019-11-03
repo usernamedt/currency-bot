@@ -31,6 +31,13 @@ public class TelegramCurrencyBot extends TelegramLongPollingBot implements IMess
     public TelegramCurrencyBot(ConfigurationSettings settings) {
         super();
         configSettings = settings;
+
+        TelegramBotsApi botsApi = new TelegramBotsApi();
+        try {
+            botsApi.registerBot(this);
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

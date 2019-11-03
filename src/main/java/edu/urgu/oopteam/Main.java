@@ -17,16 +17,14 @@ public class Main {
         // run spring app
         ApplicationContext applicationContext = SpringApplication.run(Main.class);
 
+        // load settings from .properties file
         var settings = new ConfigurationSettings();
+
         // telegram api context init
         ApiContextInitializer.init();
-        TelegramBotsApi botsApi = new TelegramBotsApi();
         var telegramBot = new TelegramCurrencyBot(settings);
-        try {
-            botsApi.registerBot(telegramBot);
-        } catch (TelegramApiException e) {
-            e.printStackTrace();
-        }
-        new CurrencyBot(applicationContext, telegramBot);
+
+        // init currency bot
+        CurrencyBot.init(applicationContext, telegramBot);
     }
 }

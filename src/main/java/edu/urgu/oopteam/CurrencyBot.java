@@ -21,6 +21,10 @@ import java.util.concurrent.Executors;
 import org.apache.log4j.Logger;
 
 public class CurrencyBot {
+    public static void init(ApplicationContext context, TelegramCurrencyBot telegramBot){
+        new CurrencyBot(context, telegramBot);
+    }
+
     private final static String HELP_MESSAGE = "Привет, это Currency Bot!" +
             "\nЯ могу показывать курсы валют. Используй команды ниже:" +
             "\n/help - показать это сообщение и список возможных команд" +
@@ -31,7 +35,6 @@ public class CurrencyBot {
     private final static String UNKNOWN_REQ_MESSAGE = "Я Вас не понимаю, проверьте соответствие команды одной из" +
             " перечисленных в /help";
     private final static String JSON_PAGE_ADDRESS = "https://www.cbr-xml-daily.ru/daily_json.js";
-//    private final static Logger LOGGER = Logger.getLogger(CurrencyBot.class.getCanonicalName());
     private static final Logger LOGGER = Logger.getLogger(CurrencyBot.class);
     private CurrenciesJsonModel currModel;
     private IMessenger messenger;
@@ -48,8 +51,8 @@ public class CurrencyBot {
             @Override
             public void run() {
                 tryUpdateJsonModel();
-              /* Потом тут в случае неудачи нужно будет отправить сообщение всем пользователям бота,
-               что обновить данные не удалось, и они получат несколько устаревшие данные.
+                /* Потом тут в случае неудачи нужно будет отправить сообщение всем пользователям бота,
+                что обновить данные не удалось, и они получат несколько устаревшие данные.
                 Для реализации этого нужно хранить где-то(в БД) все id пользователей, которые уже
                 используют бота */
             }
