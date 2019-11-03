@@ -14,6 +14,10 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import org.apache.log4j.Logger;
 
 public class CurrencyBot {
@@ -24,15 +28,21 @@ public class CurrencyBot {
             "\n/track {код валюты} {дельта} - отслеживать курс указанной валюты и уведомлять при отклонении больше дельты" +
             "\n/untrack {код валюты} - перестать отслеживать указанную валюту" +
             "\n/allTracked - вывести все текущие отслеживаемые валюты";
+    private final static String UNKNOWN_REQ_MESSAGE = "Я Вас не понимаю, проверьте соответствие команды одной из" +
+            " перечисленных в /help";
     private final static String JSON_PAGE_ADDRESS = "https://www.cbr-xml-daily.ru/daily_json.js";
 //    private final static Logger LOGGER = Logger.getLogger(CurrencyBot.class.getCanonicalName());
     private static final Logger LOGGER = Logger.getLogger(CurrencyBot.class);
     private CurrenciesJsonModel currModel;
+    private IMessenger messenger;
+    private ExecutorService pool = Executors.newFixedThreadPool(200);
+
+
     @Autowired
     private ICurrencyTrackService currencyTrackService;
 
-    public CurrencyBot(ApplicationContext context) {
-
+    public CurrencyBot(ApplicationContext context, IMessenger messenger) {
+        this.messenger = messenger;
         var jsonUpdateTimer = new Timer();
         var jsonUpdateTask = new TimerTask() {
             @Override
@@ -46,33 +56,34 @@ public class CurrencyBot {
         };
         jsonUpdateTimer.scheduleAtFixedRate(jsonUpdateTask, new Date(), 1000 * 60 * 60 * 4);
         currencyTrackService = context.getBean(CurrencyTrackService.class);
+        messenger.setUpdateHandler(this::processMessageAsync);
     }
 
-    public String processMessage(String userMessage, long chatId) {
+    private void processMessageAsync(Long chatID, String userMessage){
+        CompletableFuture.runAsync(() -> processMessage(chatID, userMessage), pool);
+    }
+
+    private void processMessage(Long chatId, String userMessage) {
         if ("/help".equals(userMessage) || "/start".equals(userMessage)) {
-            return HELP_MESSAGE;
-
+            messenger.sendMessage(chatId, HELP_MESSAGE);
         } else if (userMessage.startsWith("/curr ")) {
-            return handleCurrCommand(userMessage);
-
+            messenger.sendMessage(chatId, handleCurrCommand(userMessage));
         } else if (userMessage.startsWith("/track ")) {
-            return handleTrackCommand(chatId, userMessage);
-
+            messenger.sendMessage(chatId, handleTrackCommand(chatId, userMessage));
         } else if (userMessage.startsWith("/untrack ")) {
-            return handleUntrackCommand(chatId, userMessage);
-
+            messenger.sendMessage(chatId, handleUntrackCommand(chatId, userMessage));
         } else if (userMessage.equals("/allTracked")) {
             var userRequests = currencyTrackService.findAllByChatId(chatId);
-            return "Ваши текущие запросы на отслеживание:\n" + userRequests.toString();
+            messenger.sendMessage(chatId, "Ваши текущие запросы на отслеживание:\n" + userRequests.toString());
         } else {
-            return "Я Вас не понимаю, проверьте соответствие команды одной из перечисленных в /help";
+            messenger.sendMessage(chatId, UNKNOWN_REQ_MESSAGE);
         }
     }
 
     private String handleCurrCommand(String userMessage) {
         var message = userMessage.split(" ", 2);
         if (message.length != 2) {
-            return "У данной команды должен быть 1 параметр - название валюты";
+            return UNKNOWN_REQ_MESSAGE;
         }
         try {
             double exRate = currModel.getExchangeRate(message[1]);
@@ -82,7 +93,7 @@ public class CurrencyBot {
         }
     }
 
-    private String handleTrackCommand(long chatId, String userMessage) {
+    private String handleTrackCommand(Long chatId, String userMessage) {
         var args = userMessage.split(" ", 3);
         if (args.length != 3) {
             return "У данной команды должно быть 2 параметра - код валюты и дельта";
@@ -110,7 +121,7 @@ public class CurrencyBot {
         return "Создал новый запрос... \n" + trackRequest.toString();
     }
 
-    private String handleUntrackCommand(long chatId, String userMessage) {
+    private String handleUntrackCommand(Long chatId, String userMessage) {
         var args = userMessage.split(" ", 2);
         if (args.length != 2) {
             return "У данной команды должен быть 1 параметр - код валюты, которую вы хотите перестать отслеживать";
