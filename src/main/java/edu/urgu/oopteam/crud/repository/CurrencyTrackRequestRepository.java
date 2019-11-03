@@ -11,5 +11,5 @@ import java.util.List;
 public interface CurrencyTrackRequestRepository extends JpaRepository<CurrencyTrackRequest, Long>{
     // Можно пилить такие штуки, и спринг сам будет доставать из базы.
 //    List<CurrencyTrackRequest> getAllByCurrencyCode(final String currencyCode, PageRequest pageRequest);
-    List<CurrencyTrackRequest> getAllByChatId(final long chatId);
+    List<CurrencyTrackRequest> getAllByChatId(final Long chatId);
 }

@@ -39,9 +39,6 @@ public class CurrencyBot {
     private CurrenciesJsonModel currModel;
     private IMessenger messenger;
     private ExecutorService pool = Executors.newFixedThreadPool(200);
-
-
-    @Autowired
     private ICurrencyTrackService currencyTrackService;
 
     public CurrencyBot(ApplicationContext context, IMessenger messenger) {
@@ -50,7 +47,10 @@ public class CurrencyBot {
         var jsonUpdateTask = new TimerTask() {
             @Override
             public void run() {
-                tryUpdateJsonModel();
+                var success = tryUpdateJsonModel();
+                if (success) {
+                    notifyUsers();
+                }
                 /* Потом тут в случае неудачи нужно будет отправить сообщение всем пользователям бота,
                 что обновить данные не удалось, и они получат несколько устаревшие данные.
                 Для реализации этого нужно хранить где-то(в БД) все id пользователей, которые уже
@@ -58,8 +58,25 @@ public class CurrencyBot {
             }
         };
         jsonUpdateTimer.scheduleAtFixedRate(jsonUpdateTask, new Date(), 1000 * 60 * 60 * 4);
+//        jsonUpdateTimer.scheduleAtFixedRate(jsonUpdateTask, new Date(), 1000 * 10);
         currencyTrackService = context.getBean(CurrencyTrackService.class);
         messenger.setUpdateHandler(this::processMessageAsync);
+    }
+
+    private void notifyUsers() {
+        var requests = currencyTrackService.findAll();
+        requests.forEach(request -> {
+            try{
+                var currentRate = currModel.getExchangeRate(request.getCurrencyCode());
+                var currentDelta = currentRate - request.getBaseRate();
+                if (currentDelta - request.getDelta() >= 0) {
+                    CompletableFuture.runAsync(() -> messenger.sendMessage(request.getChatId(),
+                            "Курс отслеживаемой вами валюты изменился "+ request.getCurrencyCode()));
+                }
+            } catch (NotFoundException e){
+                LOGGER.error(e.getMessage());
+            }
+        });
     }
 
     private void processMessageAsync(Long chatID, String userMessage){

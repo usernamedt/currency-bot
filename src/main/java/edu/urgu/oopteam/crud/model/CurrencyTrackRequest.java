@@ -12,7 +12,7 @@ import javax.persistence.Table;
 public class CurrencyTrackRequest {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     @Column(name = "chat_id", nullable = false)
     private long chatId;
@@ -30,7 +30,7 @@ public class CurrencyTrackRequest {
 
     }
 
-    public CurrencyTrackRequest(long chatId, double baseRate, String currencyCode, double delta) {
+    public CurrencyTrackRequest(Long chatId, double baseRate, String currencyCode, double delta) {
         this.chatId = chatId;
         this.baseRate = baseRate;
         this.currencyCode = currencyCode;
@@ -51,7 +51,7 @@ public class CurrencyTrackRequest {
         return chatId;
     }
 
-    public void setChatId(long chatId) {
+    public void setChatId(Long chatId) {
         this.chatId = chatId;
     }
 
