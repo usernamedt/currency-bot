@@ -1,7 +1,6 @@
 package edu.urgu.oopteam.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.sun.istack.Nullable;
 import javassist.NotFoundException;
 
 import java.util.HashMap;

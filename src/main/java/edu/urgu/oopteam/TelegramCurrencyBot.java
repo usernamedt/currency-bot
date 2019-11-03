@@ -1,27 +1,13 @@
 package edu.urgu.oopteam;
 
-import edu.urgu.oopteam.models.CurrenciesJsonModel;
 import edu.urgu.oopteam.services.ConfigurationSettings;
-import edu.urgu.oopteam.services.WebService;
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.ApiContextInitializer;
-import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import java.util.Date;
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class TelegramCurrencyBot extends TelegramLongPollingBot implements IMessenger {
     private final static Logger LOGGER = Logger.getLogger(TelegramCurrencyBot.class);

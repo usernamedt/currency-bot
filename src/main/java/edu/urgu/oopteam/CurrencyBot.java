@@ -52,7 +52,7 @@ public class CurrencyBot {
                 используют бота */
             }
         };
-        jsonUpdateTimer.scheduleAtFixedRate(jsonUpdateTask, new Date(), 1000 * 60 * 60 * 1);
+        jsonUpdateTimer.scheduleAtFixedRate(jsonUpdateTask, new Date(), 1000 * 60 * 60);
         currencyTrackService = context.getBean(CurrencyTrackService.class);
         messenger.setUpdateHandler(this::processMessageAsync);
     }
