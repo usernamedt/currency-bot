@@ -57,10 +57,6 @@ public class CurrencyBot {
         messenger.setUpdateHandler(this::processMessageAsync);
     }
 
-    public static void init(ApplicationContext context, TelegramCurrencyBot telegramBot) {
-        new CurrencyBot(context, telegramBot);
-    }
-
     private void notifyTrackedUsers() {
         var requests = currencyTrackService.findAll();
         requests.forEach(request -> {
@@ -175,5 +171,9 @@ public class CurrencyBot {
             LOGGER.error("Error while downloading page", e);
         }
         return false;
+    }
+
+    public void run() throws Exception {
+        messenger.run();
     }
 }

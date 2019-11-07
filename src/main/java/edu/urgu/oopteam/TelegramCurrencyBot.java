@@ -7,6 +7,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiRequestException;
 
 
 public class TelegramCurrencyBot extends TelegramLongPollingBot implements IMessenger {
@@ -17,13 +18,6 @@ public class TelegramCurrencyBot extends TelegramLongPollingBot implements IMess
     public TelegramCurrencyBot(ConfigurationSettings settings) {
         super();
         configSettings = settings;
-
-        TelegramBotsApi botsApi = new TelegramBotsApi();
-        try {
-            botsApi.registerBot(this);
-        } catch (TelegramApiException e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
@@ -46,8 +40,7 @@ public class TelegramCurrencyBot extends TelegramLongPollingBot implements IMess
         try {
             execute(reply);
         } catch (TelegramApiException e) {
-            LOGGER.error("Error while sending message to client");
-            e.printStackTrace();
+            LOGGER.error("Error while sending message to client", e);
         }
     }
 
@@ -59,5 +52,11 @@ public class TelegramCurrencyBot extends TelegramLongPollingBot implements IMess
     @Override
     public String getBotToken() {
         return configSettings.getBotToken();
+    }
+
+    @Override
+    public void run() throws TelegramApiRequestException {
+        TelegramBotsApi botsApi = new TelegramBotsApi();
+        botsApi.registerBot(this);
     }
 }
