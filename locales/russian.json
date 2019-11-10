@@ -12,6 +12,8 @@
     "This command should only have 2 parameters: currency code and delta": "У данной команды должно быть 2 параметра - код валюты и дельта",
     "Internal bot error, try to use this command later" : "Внутренняя ошибка бота, попробуйте использовать эту команду позже",
     "No such currency in the tracked list" : "В списке отслеживаемых нет такой валюты.",
-    "This tracking request has been successfully cancelled" : "Отслеживание по данной записи успешно отменено."
+    "This tracking request has been successfully cancelled" : "Отслеживание по данной записи успешно отменено.",
+    "Your language has been successfully changed" : "Ваш язык был успешно изменён",
+    "No such languages supported" : "Такой язык не поддерживается"
   }
 }

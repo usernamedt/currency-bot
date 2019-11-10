@@ -48,6 +48,13 @@ public class LocalizerService {
         return languageLocalization.get(0).getTranslation(key);
     }
 
+    public boolean languageExists(String languageCode) {
+        var localizations = this.localizations.stream()
+                .filter(x -> x.getLanguageCode().equals(languageCode))
+                .collect(Collectors.toList());
+        return localizations.size() > 0;
+    }
+
 
     private Localization readLocaleFromFile(String fileUri) {
         var mapper = new ObjectMapper();

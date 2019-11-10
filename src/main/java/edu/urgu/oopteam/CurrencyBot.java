@@ -2,6 +2,8 @@ package edu.urgu.oopteam;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.urgu.oopteam.crud.model.User;
+import edu.urgu.oopteam.crud.repository.UserRepository;
 import edu.urgu.oopteam.models.CurrenciesJsonModel;
 import edu.urgu.oopteam.services.*;
 import javassist.NotFoundException;
@@ -35,6 +37,7 @@ public class CurrencyBot {
     private IMessenger messenger;
     private ExecutorService pool = Executors.newFixedThreadPool(200);
     private ICurrencyTrackService currencyTrackService;
+    private IUserService userService;
     private LocalizerService localizer;
 
     public CurrencyBot(ApplicationContext context, IMessenger messenger, ConfigurationSettings settings) {
@@ -55,6 +58,7 @@ public class CurrencyBot {
         };
         jsonUpdateTimer.scheduleAtFixedRate(jsonUpdateTask, new Date(), 1000 * 60 * 60);
         currencyTrackService = context.getBean(CurrencyTrackService.class);
+        userService = context.getBean(UserService.class);
         messenger.setUpdateHandler(this::processMessageAsync);
         localizer = new LocalizerService(Path.of(settings.getBotDataDir(), "locales").toString());
     }
@@ -68,7 +72,7 @@ public class CurrencyBot {
                 if (request.getDelta() * (currentDelta - request.getDelta()) >= 0) {
                     CompletableFuture.runAsync(() -> {
                                 messenger.sendMessage(request.getChatId(),
-                                        localizer.localize("Rate of your tracked currency has changed", "ru") + " " + request.getCurrencyCode());
+                                        localizer.localize("Rate of your tracked currency has changed", request.getUser().getLanguageCode()) + " " + request.getCurrencyCode());
                                 currencyTrackService.deleteTrackedCurrency(request);
                             }
                             , pool);
@@ -84,20 +88,40 @@ public class CurrencyBot {
     }
 
     private void processMessage(Long chatId, String userMessage) {
+        var user = userService.getFirstByChatId(chatId);
+        if (user == null) {
+            user = userService.createUser(chatId);
+        }
+
         if ("/help".equals(userMessage) || "/start".equals(userMessage)) {
-            messenger.sendMessage(chatId, localizer.localize(HELP_MESSAGE, "ru"));
+            messenger.sendMessage(chatId, localizer.localize(HELP_MESSAGE, user.getLanguageCode()));
         } else if (userMessage.startsWith("/curr ")) {
-            messenger.sendMessage(chatId, localizer.localize(handleCurrCommand(userMessage), "ru"));
+            messenger.sendMessage(chatId, localizer.localize(handleCurrCommand(userMessage), user.getLanguageCode()));
         } else if (userMessage.startsWith("/track ")) {
-            messenger.sendMessage(chatId, localizer.localize(handleTrackCommand(chatId, userMessage), "ru"));
+            messenger.sendMessage(chatId, localizer.localize(handleTrackCommand(chatId, userMessage), user.getLanguageCode()));
         } else if (userMessage.startsWith("/untrack ")) {
-            messenger.sendMessage(chatId, localizer.localize(handleUntrackCommand(chatId, userMessage), "ru"));
+            messenger.sendMessage(chatId, localizer.localize(handleUntrackCommand(chatId, userMessage), user.getLanguageCode()));
         } else if (userMessage.equals("/allTracked")) {
             var userRequests = currencyTrackService.findAllByChatId(chatId);
-            messenger.sendMessage(chatId, localizer.localize("Your current tracking requests:", "ru") + "\n" + userRequests.toString());
+            messenger.sendMessage(chatId, localizer.localize("Your current tracking requests:", user.getLanguageCode()) + "\n" + userRequests.toString());
+        } else if (userMessage.startsWith("/lang ")) {
+            messenger.sendMessage(chatId, localizer.localize(handleLang(chatId, userMessage), user.getLanguageCode()));
         } else {
-            messenger.sendMessage(chatId, localizer.localize(UNKNOWN_REQ_MESSAGE, "ru"));
+            messenger.sendMessage(chatId, localizer.localize(UNKNOWN_REQ_MESSAGE, user.getLanguageCode()));
         }
+    }
+
+    private String handleLang(long chatId, String userMessage) {
+        // Your language has been successfully changed"
+        var message = userMessage.split(" ");
+        if (message.length != 2) {
+            return UNKNOWN_REQ_MESSAGE;
+        }
+        if (localizer.languageExists(message[1])){
+            userService.setLanguage(chatId, message[1]);
+            return "Your language has been successfully changed";
+        }
+        return "No such language supported";
     }
 
     private String handleCurrCommand(String userMessage) {

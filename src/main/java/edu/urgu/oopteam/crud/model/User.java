@@ -1,14 +1,13 @@
 package edu.urgu.oopteam.crud.model;
 
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.text.MessageFormat;
 
+@Entity
+@Table(name = "users")
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     @Column(name = "chat_id", nullable = false)
     private long chatId;
@@ -21,6 +20,13 @@ public class User {
 
     public User(long chatId, String languageCode) {
         this.chatId = chatId;
+        this.languageCode = languageCode;
+    }
+
+    public String getLanguageCode(){
+        return languageCode;
+    }
+    public void setLanguageCode(String languageCode) {
         this.languageCode = languageCode;
     }
 

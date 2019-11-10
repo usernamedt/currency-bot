@@ -1,11 +1,9 @@
 package edu.urgu.oopteam.crud.model;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
+import javax.persistence.*;
 import java.text.MessageFormat;
 
 @Entity
@@ -26,6 +24,11 @@ public class CurrencyTrackRequest {
     // delta
     @Column(name = "delta", nullable = false)
     private double delta;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private User user;
 
     public CurrencyTrackRequest() {
 
@@ -81,6 +84,13 @@ public class CurrencyTrackRequest {
 
     public void setDelta(double delta) {
         this.delta = delta;
+    }
+
+    public User getUser() {
+        return user;
+    }
+    public void setUser(User user){
+        this.user = user;
     }
 
 
