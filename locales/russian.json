@@ -1,0 +1,9 @@
+{
+  "name": "Russian",
+  "languageCode": "ru",
+  "translations": {
+    "Your current tracking requests:" : "Ваши текущие запросы на отслеживание:",
+    "I don't know this currency, please go fuck yourself": "Я не знаю такой валюты, проверьте наличие такой валюты в списке поддерживаемых",
+    "This command should not be used like this, read the fucking manual": "У данной команды должно быть 2 параметра - код валюты и дельта"
+  }
+}

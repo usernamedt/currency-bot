@@ -12,6 +12,7 @@ import java.io.IOException;
 @SpringBootApplication
 public class Main {
     public static void main(String[] args) throws Exception {
+        //System.setProperty("https.protocols", "TLSv1.1,TLSv1.2");
         // run spring app
         ApplicationContext applicationContext = SpringApplication.run(Main.class);
 
@@ -22,7 +23,7 @@ public class Main {
         ApiContextInitializer.init();
         var telegramBot = new TelegramCurrencyBot(settings);
         // init currency bot (he'll be alive)
-        var currencyBot = new CurrencyBot(applicationContext, telegramBot);
+        var currencyBot = new CurrencyBot(applicationContext, telegramBot, settings);
         currencyBot.run();
     }
 }

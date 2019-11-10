@@ -3,12 +3,12 @@ package edu.urgu.oopteam;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.urgu.oopteam.models.CurrenciesJsonModel;
-import edu.urgu.oopteam.services.CurrencyTrackService;
-import edu.urgu.oopteam.services.ICurrencyTrackService;
-import edu.urgu.oopteam.services.WebService;
+import edu.urgu.oopteam.services.*;
 import javassist.NotFoundException;
 import org.springframework.context.ApplicationContext;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.Timer;
@@ -18,6 +18,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.apache.log4j.Logger;
+import org.springframework.context.ConfigurableApplicationContext;
 
 public class CurrencyBot {
     private final static String HELP_MESSAGE = "Привет, это Currency Bot!" +
@@ -35,8 +36,9 @@ public class CurrencyBot {
     private IMessenger messenger;
     private ExecutorService pool = Executors.newFixedThreadPool(200);
     private ICurrencyTrackService currencyTrackService;
+    private LocalizerService localizer;
 
-    public CurrencyBot(ApplicationContext context, IMessenger messenger) {
+    public CurrencyBot(ApplicationContext context, IMessenger messenger, ConfigurationSettings settings) {
         this.messenger = messenger;
         var jsonUpdateTimer = new Timer();
         var jsonUpdateTask = new TimerTask() {
@@ -55,6 +57,7 @@ public class CurrencyBot {
         jsonUpdateTimer.scheduleAtFixedRate(jsonUpdateTask, new Date(), 1000 * 60 * 60);
         currencyTrackService = context.getBean(CurrencyTrackService.class);
         messenger.setUpdateHandler(this::processMessageAsync);
+        localizer = new LocalizerService(Path.of(settings.getBotDataDir(), "locales").toString());
     }
 
     private void notifyTrackedUsers() {
@@ -92,7 +95,7 @@ public class CurrencyBot {
             messenger.sendMessage(chatId, handleUntrackCommand(chatId, userMessage));
         } else if (userMessage.equals("/allTracked")) {
             var userRequests = currencyTrackService.findAllByChatId(chatId);
-            messenger.sendMessage(chatId, "Ваши текущие запросы на отслеживание:\n" + userRequests.toString());
+            messenger.sendMessage(chatId, localizer.localize("Your current tracking requests:", "ru") + "\n" + userRequests.toString());
         } else {
             messenger.sendMessage(chatId, UNKNOWN_REQ_MESSAGE);
         }
@@ -107,14 +110,14 @@ public class CurrencyBot {
             double exRate = currModel.getExchangeRate(message[1]);
             return exRate + " RUB";
         } catch (NotFoundException e) {
-            return "Я не знаю такой валюты, проверьте наличие такой валюты в списке поддерживаемых";
+            return localizer.localize("I don't know this currency, please go fuck yourself", "ru");
         }
     }
 
     private String handleTrackCommand(Long chatId, String userMessage) {
         var args = userMessage.split(" ", 3);
         if (args.length != 3) {
-            return "У данной команды должно быть 2 параметра - код валюты и дельта";
+            return localizer.localize("This command should not be used like this, read the fucking manual", "ru");
         }
         var currencyCode = args[1].toLowerCase();
         var delta = Double.parseDouble(args[2]);
@@ -145,9 +148,9 @@ public class CurrencyBot {
     }
 
     private String handleUntrackCommand(Long chatId, String userMessage) {
-        var args = userMessage.split(" ", 2);
+        var args = userMessage.split(" ");
         if (args.length != 2) {
-            return "У данной команды должен быть 1 параметр - код валюты, которую вы хотите перестать отслеживать";
+            return "This command should have 1 parameter";
         }
         var currencyCode = args[1];
         try {
