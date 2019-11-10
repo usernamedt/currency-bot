@@ -19,6 +19,8 @@ public class LocalizerService {
 
     private List<Localization> localizations;
 
+    private final String mainLanguageCode = "en";
+
     public LocalizerService(String localesFolder) {
         try {
             List<String> localeFilenames = getLocaleFilenames(localesFolder);
@@ -49,6 +51,9 @@ public class LocalizerService {
     }
 
     public boolean languageExists(String languageCode) {
+        if (languageCode.equals(mainLanguageCode)) {
+            return true;
+        }
         var localizations = this.localizations.stream()
                 .filter(x -> x.getLanguageCode().equals(languageCode))
                 .collect(Collectors.toList());

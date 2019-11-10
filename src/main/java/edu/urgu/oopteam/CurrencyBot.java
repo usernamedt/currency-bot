@@ -3,13 +3,11 @@ package edu.urgu.oopteam;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.urgu.oopteam.crud.model.User;
-import edu.urgu.oopteam.crud.repository.UserRepository;
 import edu.urgu.oopteam.models.CurrenciesJsonModel;
 import edu.urgu.oopteam.services.*;
 import javassist.NotFoundException;
 import org.springframework.context.ApplicationContext;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.Date;
@@ -20,7 +18,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.apache.log4j.Logger;
-import org.springframework.context.ConfigurableApplicationContext;
 
 public class CurrencyBot {
     private final static String HELP_MESSAGE = "Hello, it's Currency Bot!" +
@@ -29,7 +26,8 @@ public class CurrencyBot {
             "\n/curr {currency code} - to show specified currency to RUB exchange rate" +
             "\n/track {currency code} {delta} - start to track specified currency rate and notify if it changes more/less than delta" +
             "\n/untrack {currency code} - stop to track specified currency" +
-            "\n/allTracked - show all being tracked currencies";
+            "\n/allTracked - show all being tracked currencies" +
+            "\n/lang {language code} - set language";
     private final static String UNKNOWN_REQ_MESSAGE = "I don't understand you, check if required command matches one of enlisted in /help message";
     private final static String JSON_PAGE_ADDRESS = "https://www.cbr-xml-daily.ru/daily_json.js";
     private static final Logger LOGGER = Logger.getLogger(CurrencyBot.class);
@@ -98,9 +96,9 @@ public class CurrencyBot {
         } else if (userMessage.startsWith("/curr ")) {
             messenger.sendMessage(chatId, localizer.localize(handleCurrCommand(userMessage), user.getLanguageCode()));
         } else if (userMessage.startsWith("/track ")) {
-            messenger.sendMessage(chatId, localizer.localize(handleTrackCommand(chatId, userMessage), user.getLanguageCode()));
+            messenger.sendMessage(chatId, localizer.localize(handleTrackCommand(chatId, userMessage, user), user.getLanguageCode()));
         } else if (userMessage.startsWith("/untrack ")) {
-            messenger.sendMessage(chatId, localizer.localize(handleUntrackCommand(chatId, userMessage), user.getLanguageCode()));
+            messenger.sendMessage(chatId, localizer.localize(handleUntrackCommand(chatId, userMessage, user), user.getLanguageCode()));
         } else if (userMessage.equals("/allTracked")) {
             var userRequests = currencyTrackService.findAllByChatId(chatId);
             messenger.sendMessage(chatId, localizer.localize("Your current tracking requests:", user.getLanguageCode()) + "\n" + userRequests.toString());
@@ -125,7 +123,7 @@ public class CurrencyBot {
     }
 
     private String handleCurrCommand(String userMessage) {
-        var message = userMessage.split(" ", 2);
+        var message = userMessage.split(" ");
         if (message.length != 2) {
             return UNKNOWN_REQ_MESSAGE;
         }
@@ -137,8 +135,8 @@ public class CurrencyBot {
         }
     }
 
-    private String handleTrackCommand(Long chatId, String userMessage) {
-        var args = userMessage.split(" ", 3);
+    private String handleTrackCommand(Long chatId, String userMessage, User user) {
+        var args = userMessage.split(" ");
         if (args.length != 3) {
             return "This command should only have 2 parameters: currency code and delta";
         }
@@ -152,17 +150,17 @@ public class CurrencyBot {
         }
 
         try {
-            var trackedCurrenciesList = currencyTrackService.findTrackedCurrencyFast(chatId, currencyCode);
+            var trackedCurrenciesList = currencyTrackService.findTrackedCurrency(chatId, currencyCode);
             if (trackedCurrenciesList.size() == 0) {
-                var trackRequest = currencyTrackService.addTrackedCurrency(chatId, currExchangeRate, currencyCode, delta);
-                return "New request added" + "\n" + trackRequest.toString();
+                var trackRequest = currencyTrackService.addTrackedCurrency(chatId, currExchangeRate, currencyCode, delta, user);
+                return localizer.localize("New request added", user.getLanguageCode()) + "\n" + trackRequest.toString();
             }
             if (trackedCurrenciesList.size() > 1) {
                 throw new SQLException("Smth wrong");
             }
             var trackedCurrency = trackedCurrenciesList.get(0);
             currencyTrackService.updateTrackedCurrency(trackedCurrency, delta, currExchangeRate);
-            return "Existing request has been updated" + "\n" + trackedCurrency.toString();
+            return localizer.localize("Existing request has been updated", user.getLanguageCode()) + "\n" + trackedCurrency.toString();
 
         } catch (SQLException e) {
             LOGGER.error(e.getMessage());
@@ -170,21 +168,21 @@ public class CurrencyBot {
         }
     }
 
-    private String handleUntrackCommand(Long chatId, String userMessage) {
+    private String handleUntrackCommand(Long chatId, String userMessage, User user) {
         var args = userMessage.split(" ");
         if (args.length != 2) {
             return "This command should have 1 parameter";
         }
         var currencyCode = args[1];
         try {
-            var trackedCurrenciesList = currencyTrackService.findTrackedCurrencyFast(chatId, currencyCode);
+            var trackedCurrenciesList = currencyTrackService.findTrackedCurrency(chatId, currencyCode);
             if (trackedCurrenciesList == null || trackedCurrenciesList.size() == 0) {
                 return "No such currency in the tracked list";
             }
             if (trackedCurrenciesList.size() == 1) {
                 var trackedCurrency = trackedCurrenciesList.get(0); // потом проверка нужна
                 currencyTrackService.deleteTrackedCurrency(trackedCurrency);
-                return "This tracking request has been successfully cancelled" + "\n" + trackedCurrency.toString();
+                return localizer.localize("This tracking request has been successfully cancelled", user.getLanguageCode()) + "\n" + trackedCurrency.toString();
             }
             else {
                 throw new SQLException("Smth wrong");

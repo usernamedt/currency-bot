@@ -34,11 +34,12 @@ public class CurrencyTrackRequest {
 
     }
 
-    public CurrencyTrackRequest(Long chatId, double baseRate, String currencyCode, double delta) {
+    public CurrencyTrackRequest(Long chatId, double baseRate, String currencyCode, double delta, User user) {
         this.chatId = chatId;
         this.baseRate = baseRate;
         this.currencyCode = currencyCode;
         this.delta = delta;
+        this.user = user;
     }
 
 
