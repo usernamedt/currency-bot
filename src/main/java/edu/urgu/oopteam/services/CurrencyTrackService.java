@@ -29,6 +29,10 @@ public class CurrencyTrackService implements ICurrencyTrackService {
         return currencyTrackRequestRepository.getAllByChatId(chatId);
     }
 
+    public List<CurrencyTrackRequest> findTrackedCurrencyFast(long chatId, String currencyCode) {
+        return currencyTrackRequestRepository.findTrackedCurrencyFast(chatId, currencyCode);
+    }
+
     @Override
     public CurrencyTrackRequest addTrackedCurrency(long chatId, double baseRate, String currencyCode, double delta) {
         var trackRequest = new CurrencyTrackRequest(chatId, baseRate, currencyCode, delta);

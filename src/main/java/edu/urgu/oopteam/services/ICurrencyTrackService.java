@@ -12,4 +12,5 @@ public interface ICurrencyTrackService {
     CurrencyTrackRequest findTrackedCurrency(long chatId, String currencyCode) throws SQLException;
     List<CurrencyTrackRequest> findAllByChatId(long chatId);
     CurrencyTrackRequest deleteTrackedCurrency(CurrencyTrackRequest request);
+    List<CurrencyTrackRequest> findTrackedCurrencyFast(long chatId, String currencyCode);
 }

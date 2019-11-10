@@ -126,17 +126,22 @@ public class CurrencyBot {
         }
 
         try {
-            var trackedCurrency = currencyTrackService.findTrackedCurrency(chatId, currencyCode);
-            if (trackedCurrency != null) {
-                currencyTrackService.updateTrackedCurrency(trackedCurrency, delta, currExchangeRate);
-                return "Обновил существующий запрос \n" + trackedCurrency.toString();
+            var trackedCurrenciesList = currencyTrackService.findTrackedCurrencyFast(chatId, currencyCode);
+            if (trackedCurrenciesList.size() == 0) {
+                var trackRequest = currencyTrackService.addTrackedCurrency(chatId, currExchangeRate, currencyCode, delta);
+                return "Создал новый запрос... \n" + trackRequest.toString();
             }
+            if (trackedCurrenciesList.size() > 1) {
+                throw new SQLException("Smth wrong");
+            }
+            var trackedCurrency = trackedCurrenciesList.get(0);
+            currencyTrackService.updateTrackedCurrency(trackedCurrency, delta, currExchangeRate);
+            return "Обновил существующий запрос \n" + trackedCurrency.toString();
+
         } catch (SQLException e) {
             LOGGER.error(e.getMessage());
             return "Внутренняя ошибка бота, попробуйте использовать эту команду позже";
         }
-        var trackRequest = currencyTrackService.addTrackedCurrency(chatId, currExchangeRate, currencyCode, delta);
-        return "Создал новый запрос... \n" + trackRequest.toString();
     }
 
     private String handleUntrackCommand(Long chatId, String userMessage) {
@@ -146,13 +151,19 @@ public class CurrencyBot {
         }
         var currencyCode = args[1];
         try {
-            var trackedCurrency = currencyTrackService.findTrackedCurrency(chatId, currencyCode);
-            if (trackedCurrency == null) {
-                return "Такая валюта в данный момент не отслеживается. Чтобы посмотреть список отслеживаемых валют, " +
-                        "воспольуйтесь командой /allTracked";
+            var trackedCurrenciesList = currencyTrackService.findTrackedCurrencyFast(chatId, currencyCode);
+            if (trackedCurrenciesList == null || trackedCurrenciesList.size() == 0) {
+                return "В списке отслеживаемых нет такой валюты.";
             }
-            currencyTrackService.deleteTrackedCurrency(trackedCurrency);
-            return "Отслеживание по данной записи успешно отменено.\n" + trackedCurrency.toString();
+            if (trackedCurrenciesList.size() == 1) {
+                var trackedCurrency = trackedCurrenciesList.get(0); // потом проверка нужна
+                currencyTrackService.deleteTrackedCurrency(trackedCurrency);
+                return "Отслеживание по данной записи успешно отменено.\n" + trackedCurrency.toString();
+            }
+            else {
+                throw new SQLException("Smth wrong");
+            }
+//            var trackedCurrency = currencyTrackService.findTrackedCurrency(chatId, currencyCode);
         } catch (SQLException e) {
             LOGGER.error(e.getMessage());
             return "Внутренняя ошибка бота, попробуйте использовать эту команду позже";
