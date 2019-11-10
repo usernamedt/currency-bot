@@ -6,6 +6,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.text.MessageFormat;
 
 @Entity
 @Table(name = "currencytrackrequests")
@@ -85,8 +86,9 @@ public class CurrencyTrackRequest {
 
     @Override
     public String toString() {
-        return "CurrencyTrackRequest [id=" + id + ", chatId=" + chatId + ", baseRate=" + baseRate + ", currencyCode="
-                + currencyCode + ", delta=" + delta + "]";
+        return MessageFormat.format("CurrencyTrackRequest " +
+                "[id= {0}, chatId= {1}, baseRate= {2}, currencyCode= {3}, delta= {4}",
+                id, chatId, baseRate, currencyCode, delta);
     }
 
 }

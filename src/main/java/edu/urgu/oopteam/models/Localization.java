@@ -5,11 +5,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Map;
 
 public class Localization {
-    @JsonProperty("name")
+    @JsonProperty("Name")
     private String name;
-    @JsonProperty("languageCode")
+    @JsonProperty("LanguageCode")
     private String languageCode;
-    @JsonProperty("translations")
+    @JsonProperty("Translations")
     private Map<String, String> translations;
 
     public String getName() {

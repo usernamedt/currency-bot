@@ -21,15 +21,14 @@ import org.apache.log4j.Logger;
 import org.springframework.context.ConfigurableApplicationContext;
 
 public class CurrencyBot {
-    private final static String HELP_MESSAGE = "Привет, это Currency Bot!" +
-            "\nЯ могу показывать курсы валют. Используй команды ниже:" +
-            "\n/help - показать это сообщение и список возможных команд" +
-            "\n/curr {код валюты} - показать курс указанной валюты к рублю" +
-            "\n/track {код валюты} {дельта} - отслеживать курс указанной валюты и уведомлять при отклонении больше дельты" +
-            "\n/untrack {код валюты} - перестать отслеживать указанную валюту" +
-            "\n/allTracked - вывести все текущие отслеживаемые валюты";
-    private final static String UNKNOWN_REQ_MESSAGE = "Я Вас не понимаю, проверьте соответствие команды одной из" +
-            " перечисленных в /help";
+    private final static String HELP_MESSAGE = "Hello, it's Currency Bot!" +
+            "\nI can show you some exchange rates. Use commands below:" +
+            "\n/help - to show this message and possible commands" +
+            "\n/curr {currency code} - to show specified currency to RUB exchange rate" +
+            "\n/track {currency code} {delta} - start to track specified currency rate and notify if it changes more/less than delta" +
+            "\n/untrack {currency code} - stop to track specified currency" +
+            "\n/allTracked - show all being tracked currencies";
+    private final static String UNKNOWN_REQ_MESSAGE = "I don't understand you, check if required command matches one of enlisted in /help message";
     private final static String JSON_PAGE_ADDRESS = "https://www.cbr-xml-daily.ru/daily_json.js";
     private static final Logger LOGGER = Logger.getLogger(CurrencyBot.class);
     private CurrenciesJsonModel currModel;
@@ -69,7 +68,7 @@ public class CurrencyBot {
                 if (request.getDelta() * (currentDelta - request.getDelta()) >= 0) {
                     CompletableFuture.runAsync(() -> {
                                 messenger.sendMessage(request.getChatId(),
-                                        "Курс отслеживаемой вами валюты изменился " + request.getCurrencyCode());
+                                        localizer.localize("Rate of your tracked currency has changed", "ru") + " " + request.getCurrencyCode());
                                 currencyTrackService.deleteTrackedCurrency(request);
                             }
                             , pool);
@@ -86,18 +85,18 @@ public class CurrencyBot {
 
     private void processMessage(Long chatId, String userMessage) {
         if ("/help".equals(userMessage) || "/start".equals(userMessage)) {
-            messenger.sendMessage(chatId, HELP_MESSAGE);
+            messenger.sendMessage(chatId, localizer.localize(HELP_MESSAGE, "ru"));
         } else if (userMessage.startsWith("/curr ")) {
-            messenger.sendMessage(chatId, handleCurrCommand(userMessage));
+            messenger.sendMessage(chatId, localizer.localize(handleCurrCommand(userMessage), "ru"));
         } else if (userMessage.startsWith("/track ")) {
-            messenger.sendMessage(chatId, handleTrackCommand(chatId, userMessage));
+            messenger.sendMessage(chatId, localizer.localize(handleTrackCommand(chatId, userMessage), "ru"));
         } else if (userMessage.startsWith("/untrack ")) {
-            messenger.sendMessage(chatId, handleUntrackCommand(chatId, userMessage));
+            messenger.sendMessage(chatId, localizer.localize(handleUntrackCommand(chatId, userMessage), "ru"));
         } else if (userMessage.equals("/allTracked")) {
             var userRequests = currencyTrackService.findAllByChatId(chatId);
             messenger.sendMessage(chatId, localizer.localize("Your current tracking requests:", "ru") + "\n" + userRequests.toString());
         } else {
-            messenger.sendMessage(chatId, UNKNOWN_REQ_MESSAGE);
+            messenger.sendMessage(chatId, localizer.localize(UNKNOWN_REQ_MESSAGE, "ru"));
         }
     }
 
@@ -110,14 +109,14 @@ public class CurrencyBot {
             double exRate = currModel.getExchangeRate(message[1]);
             return exRate + " RUB";
         } catch (NotFoundException e) {
-            return localizer.localize("I don't know this currency, please go fuck yourself", "ru");
+            return "I don't know this currency, please check supporting currencies";
         }
     }
 
     private String handleTrackCommand(Long chatId, String userMessage) {
         var args = userMessage.split(" ", 3);
         if (args.length != 3) {
-            return localizer.localize("This command should not be used like this, read the fucking manual", "ru");
+            return "This command should only have 2 parameters: currency code and delta";
         }
         var currencyCode = args[1].toLowerCase();
         var delta = Double.parseDouble(args[2]);
@@ -132,18 +131,18 @@ public class CurrencyBot {
             var trackedCurrenciesList = currencyTrackService.findTrackedCurrencyFast(chatId, currencyCode);
             if (trackedCurrenciesList.size() == 0) {
                 var trackRequest = currencyTrackService.addTrackedCurrency(chatId, currExchangeRate, currencyCode, delta);
-                return "Создал новый запрос... \n" + trackRequest.toString();
+                return "New request added" + "\n" + trackRequest.toString();
             }
             if (trackedCurrenciesList.size() > 1) {
                 throw new SQLException("Smth wrong");
             }
             var trackedCurrency = trackedCurrenciesList.get(0);
             currencyTrackService.updateTrackedCurrency(trackedCurrency, delta, currExchangeRate);
-            return "Обновил существующий запрос \n" + trackedCurrency.toString();
+            return "Existing request has been updated" + "\n" + trackedCurrency.toString();
 
         } catch (SQLException e) {
             LOGGER.error(e.getMessage());
-            return "Внутренняя ошибка бота, попробуйте использовать эту команду позже";
+            return "Internal bot error, try to use this command later";
         }
     }
 
@@ -156,12 +155,12 @@ public class CurrencyBot {
         try {
             var trackedCurrenciesList = currencyTrackService.findTrackedCurrencyFast(chatId, currencyCode);
             if (trackedCurrenciesList == null || trackedCurrenciesList.size() == 0) {
-                return "В списке отслеживаемых нет такой валюты.";
+                return "No such currency in the tracked list";
             }
             if (trackedCurrenciesList.size() == 1) {
                 var trackedCurrency = trackedCurrenciesList.get(0); // потом проверка нужна
                 currencyTrackService.deleteTrackedCurrency(trackedCurrency);
-                return "Отслеживание по данной записи успешно отменено.\n" + trackedCurrency.toString();
+                return "This tracking request has been successfully cancelled" + "\n" + trackedCurrency.toString();
             }
             else {
                 throw new SQLException("Smth wrong");
@@ -169,7 +168,7 @@ public class CurrencyBot {
 //            var trackedCurrency = currencyTrackService.findTrackedCurrency(chatId, currencyCode);
         } catch (SQLException e) {
             LOGGER.error(e.getMessage());
-            return "Внутренняя ошибка бота, попробуйте использовать эту команду позже";
+            return "Internal bot error, try to use this command later";
         }
     }
 
