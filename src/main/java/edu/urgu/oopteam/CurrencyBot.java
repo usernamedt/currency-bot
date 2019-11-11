@@ -27,7 +27,7 @@ public class CurrencyBot {
             "\n/track {currency code} {delta} - start to track specified currency rate and notify if it changes more/less than delta" +
             "\n/untrack {currency code} - stop to track specified currency" +
             "\n/allTracked - show all being tracked currencies" +
-            "\n/lang {language code} - set language";
+            "\n/lang {language code} - set language (available languages: ru, en)";
     private final static String UNKNOWN_REQ_MESSAGE = "I don't understand you, check if required command matches one of enlisted in /help message";
     private final static String JSON_PAGE_ADDRESS = "https://www.cbr-xml-daily.ru/daily_json.js";
     private static final Logger LOGGER = Logger.getLogger(CurrencyBot.class);
@@ -49,9 +49,9 @@ public class CurrencyBot {
                     notifyTrackedUsers();
                 }
                 /* Потом тут в случае неудачи нужно будет отправить сообщение всем пользователям бота,
-                что обновить данные не удалось, и они получат несколько устаревшие данные.
-                Для реализации этого нужно хранить где-то(в БД) все id пользователей, которые уже
-                используют бота */
+                что обновить данные не удалось, и они получат несколько устаревшие данные. *Или может это не нужно?
+                (Для реализации этого нужно хранить где-то(в БД) все id пользователей, которые уже
+                используют бота) */
             }
         };
         jsonUpdateTimer.scheduleAtFixedRate(jsonUpdateTask, new Date(), 1000 * 60 * 60);
@@ -69,11 +69,13 @@ public class CurrencyBot {
                 var currentDelta = currentRate - request.getBaseRate();
                 if (request.getDelta() * (currentDelta - request.getDelta()) >= 0) {
                     CompletableFuture.runAsync(() -> {
-                                messenger.sendMessage(request.getChatId(),
-                                        localizer.localize("Rate of your tracked currency has changed", request.getUser().getLanguageCode()) + " " + request.getCurrencyCode());
-                                currencyTrackService.deleteTrackedCurrency(request);
-                            }
-                            , pool);
+                        var localizedMessage = localizer.localize(
+                                "Rate of your tracked currency has changed",
+                                request.getUser().getLanguageCode()) + " " + request.getCurrencyCode();
+
+                        messenger.sendMessage(request.getChatId(), localizedMessage);
+                        currencyTrackService.deleteTrackedCurrency(request);
+                    });
                 }
             } catch (NotFoundException e) {
                 LOGGER.error(e.getMessage());
@@ -110,12 +112,11 @@ public class CurrencyBot {
     }
 
     private String handleLang(long chatId, String userMessage) {
-        // Your language has been successfully changed"
         var message = userMessage.split(" ");
         if (message.length != 2) {
             return UNKNOWN_REQ_MESSAGE;
         }
-        if (localizer.languageExists(message[1])){
+        if (localizer.languageExists(message[1])) {
             userService.setLanguage(chatId, message[1]);
             return "Your language has been successfully changed";
         }
@@ -183,11 +184,9 @@ public class CurrencyBot {
                 var trackedCurrency = trackedCurrenciesList.get(0); // потом проверка нужна
                 currencyTrackService.deleteTrackedCurrency(trackedCurrency);
                 return localizer.localize("This tracking request has been successfully cancelled", user.getLanguageCode()) + "\n" + trackedCurrency.toString();
-            }
-            else {
+            } else {
                 throw new SQLException("Smth wrong");
             }
-//            var trackedCurrency = currencyTrackService.findTrackedCurrency(chatId, currencyCode);
         } catch (SQLException e) {
             LOGGER.error(e.getMessage());
             return "Internal bot error, try to use this command later";

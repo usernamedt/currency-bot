@@ -79,10 +79,8 @@ public class LocalizerService {
     }
 
     /**
-     * Read file from resource folder
-     *
      * @param fileUri fileUri
-     * @return file as a string
+     * @return file content as a string
      */
     private String readFile(String fileUri) throws IOException {
         Scanner sc = new Scanner(new File(fileUri));
