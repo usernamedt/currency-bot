@@ -38,6 +38,11 @@ public class CurrencyBot {
     private IUserService userService;
     private LocalizerService localizer;
 
+    /**
+     * @param context Spring application context
+     * @param messenger Some IMessenger implementation
+     * @param settings Object which stores settings needed for a bot
+     */
     public CurrencyBot(ApplicationContext context, IMessenger messenger, ConfigurationSettings settings) {
         this.messenger = messenger;
         var jsonUpdateTimer = new Timer();
@@ -61,6 +66,9 @@ public class CurrencyBot {
         localizer = new LocalizerService(Path.of(settings.getBotDataDir(), "locales").toString());
     }
 
+    /**
+     * Notifies users which are tracking some currencies if delta is greater than requested
+     */
     private void notifyTrackedUsers() {
         var requests = currencyTrackService.findAll();
         requests.forEach(request -> {
@@ -87,6 +95,11 @@ public class CurrencyBot {
         CompletableFuture.runAsync(() -> processMessage(chatID, userMessage), pool);
     }
 
+    /**
+     * Parses a command then processes it
+     * @param chatId User's chat ID
+     * @param userMessage User's message
+     */
     private void processMessage(Long chatId, String userMessage) {
         var user = userService.getFirstByChatId(chatId);
         if (user == null) {
@@ -111,6 +124,12 @@ public class CurrencyBot {
         }
     }
 
+    /**
+     * Handles /lang command (which changes language to specified)
+     * @param chatId User's chat ID
+     * @param userMessage User's message
+     * @return Reply to a user
+     */
     private String handleLang(long chatId, String userMessage) {
         var message = userMessage.split(" ");
         if (message.length != 2) {
@@ -123,6 +142,11 @@ public class CurrencyBot {
         return "No such language supported";
     }
 
+    /**
+     * Handles /curr command (for more info use documentation)
+     * @param userMessage User's message
+     * @return Reply to a user (exchange rate for a currency)
+     */
     private String handleCurrCommand(String userMessage) {
         var message = userMessage.split(" ");
         if (message.length != 2) {
@@ -136,6 +160,13 @@ public class CurrencyBot {
         }
     }
 
+    /**
+     * Handles /track command (for more info use documentation)
+     * @param user User object
+     * @param chatId User's chat ID
+     * @param userMessage User's message
+     * @return Message for user that tells if everything processed right
+     */
     private String handleTrackCommand(Long chatId, String userMessage, User user) {
         var args = userMessage.split(" ");
         if (args.length != 3) {
@@ -151,15 +182,11 @@ public class CurrencyBot {
         }
 
         try {
-            var trackedCurrenciesList = currencyTrackService.findTrackedCurrency(chatId, currencyCode);
-            if (trackedCurrenciesList.size() == 0) {
-                var trackRequest = currencyTrackService.addTrackedCurrency(chatId, currExchangeRate, currencyCode, delta, user);
+            var trackedCurrency = currencyTrackService.findTrackedCurrency(chatId, currencyCode);
+            if (trackedCurrency == null) {
+                var trackRequest = currencyTrackService.addTrackedCurrency(currExchangeRate, currencyCode, delta, user);
                 return localizer.localize("New request added", user.getLanguageCode()) + "\n" + trackRequest.toString();
             }
-            if (trackedCurrenciesList.size() > 1) {
-                throw new SQLException("Smth wrong");
-            }
-            var trackedCurrency = trackedCurrenciesList.get(0);
             currencyTrackService.updateTrackedCurrency(trackedCurrency, delta, currExchangeRate);
             return localizer.localize("Existing request has been updated", user.getLanguageCode()) + "\n" + trackedCurrency.toString();
 
@@ -169,6 +196,13 @@ public class CurrencyBot {
         }
     }
 
+    /**
+     * Handles /untrack command (for more info use documentation)
+     * @param user User object
+     * @param chatId User's chat ID
+     * @param userMessage User's message
+     * @return Message for user that tells if everything processed right
+     */
     private String handleUntrackCommand(Long chatId, String userMessage, User user) {
         var args = userMessage.split(" ");
         if (args.length != 2) {
@@ -176,27 +210,26 @@ public class CurrencyBot {
         }
         var currencyCode = args[1];
         try {
-            var trackedCurrenciesList = currencyTrackService.findTrackedCurrency(chatId, currencyCode);
-            if (trackedCurrenciesList == null || trackedCurrenciesList.size() == 0) {
+            var trackedCurrency = currencyTrackService.findTrackedCurrency(chatId, currencyCode);
+            if (trackedCurrency == null) {
                 return "No such currency in the tracked list";
             }
-            if (trackedCurrenciesList.size() == 1) {
-                var trackedCurrency = trackedCurrenciesList.get(0); // потом проверка нужна
-                currencyTrackService.deleteTrackedCurrency(trackedCurrency);
-                return localizer.localize("This tracking request has been successfully cancelled", user.getLanguageCode()) + "\n" + trackedCurrency.toString();
-            } else {
-                throw new SQLException("Smth wrong");
-            }
+            currencyTrackService.deleteTrackedCurrency(trackedCurrency);
+            return localizer.localize("This tracking request has been successfully cancelled", user.getLanguageCode()) + "\n" + trackedCurrency.toString();
         } catch (SQLException e) {
             LOGGER.error(e.getMessage());
             return "Internal bot error, try to use this command later";
         }
     }
 
+    /**
+     * Tries to download json from the net and parse it
+     * @return True if downloaded was successful and false if not
+     */
     private boolean tryUpdateJsonModel() {
         var mapper = new ObjectMapper();
         try {
-            var webPage = WebService.getPageContent(JSON_PAGE_ADDRESS, "UTF-8");
+            var webPage = JsonDownloader.getJsonString(JSON_PAGE_ADDRESS, "UTF-8");
             currModel = mapper.readValue(webPage, CurrenciesJsonModel.class);
             return true;
         } catch (JsonProcessingException jException) {
@@ -207,6 +240,10 @@ public class CurrencyBot {
         return false;
     }
 
+    /**
+     * Runs a bot
+     * @throws Exception Messenger starting exception
+     */
     public void run() throws Exception {
         messenger.run();
     }

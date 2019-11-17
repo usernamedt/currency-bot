@@ -18,14 +18,12 @@ public class CurrenciesJsonModel {
     @JsonProperty("Valute")
     private Map<String, CurrencyData> currencyDataMap;
 
-    public static HashMap<String, CurrencyData> getNameToCurrencyDataDict(CurrenciesJsonModel model) {
-        var resultDict = new HashMap<String, CurrencyData>();
-        for(var currencyCode : model.currencyDataMap.keySet()) {
-            resultDict.put(model.currencyDataMap.get(currencyCode).getName(), model.currencyDataMap.get(currencyCode));
-        }
-        return resultDict;
-    }
-
+    /**
+     * Gets exchange rate of the specified currency
+     * @param currencyCode Code of the needed currency
+     * @return Amount of rubles
+     * @throws NotFoundException Exception connected with non-existing currency code
+     */
     public double getExchangeRate(String currencyCode) throws NotFoundException {
         if (currencyDataMap.containsKey(currencyCode.toUpperCase()))
             return Double.parseDouble(currencyDataMap.get(currencyCode.toUpperCase()).getValue());

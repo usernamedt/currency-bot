@@ -5,8 +5,8 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
 
-public class WebService {
-    public static String getPageContent(String pageAddress, String codePage) throws Exception {
+public class JsonDownloader {
+    public static String getJsonString(String pageAddress, String codePage) throws Exception {
         StringBuilder sb = new StringBuilder();
         URL pageURL = new URL(pageAddress);
         URLConnection uc = pageURL.openConnection();

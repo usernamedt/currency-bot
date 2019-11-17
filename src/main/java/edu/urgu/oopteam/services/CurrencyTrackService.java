@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 
 import java.sql.SQLException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class CurrencyTrackService implements ICurrencyTrackService {
@@ -30,27 +29,34 @@ public class CurrencyTrackService implements ICurrencyTrackService {
         return currencyTrackRequestRepository.getAllByChatId(chatId);
     }
 
-    public List<CurrencyTrackRequest> findTrackedCurrency(long chatId, String currencyCode) {
-        return currencyTrackRequestRepository.findTrackedCurrencyFast(chatId, currencyCode);
+    @Override
+    public CurrencyTrackRequest findTrackedCurrency(long chatId, String currencyCode) throws SQLException {
+            var trackedCurrenciesList = currencyTrackRequestRepository.findTrackedCurrencies(chatId, currencyCode);
+            if (trackedCurrenciesList.isEmpty()) {
+                return null;
+            }
+            if (trackedCurrenciesList.size() > 1) {
+                throw new SQLException("Smth wrong");
+            }
+            return trackedCurrenciesList.get(0);
     }
 
     @Override
-    public CurrencyTrackRequest addTrackedCurrency(long chatId, double baseRate, String currencyCode, double delta, User user) {
-        var trackRequest = new CurrencyTrackRequest(chatId, baseRate, currencyCode, delta, user);
+    public CurrencyTrackRequest addTrackedCurrency(double baseRate, String currencyCode, double delta, User user) {
+        var trackRequest = new CurrencyTrackRequest(user.getChatId(), baseRate, currencyCode, delta, user);
         currencyTrackRequestRepository.save(trackRequest);
         return trackRequest;
     }
 
     @Override
-    public void updateTrackedCurrency(CurrencyTrackRequest entity, double delta, double currExchangeRate) {
-        entity.setDelta(delta);
-        entity.setBaseRate(currExchangeRate);
-        currencyTrackRequestRepository.save(entity);
+    public void updateTrackedCurrency(CurrencyTrackRequest request, double delta, double currExchangeRate) {
+        request.setDelta(delta);
+        request.setBaseRate(currExchangeRate);
+        currencyTrackRequestRepository.save(request);
     }
 
     @Override
-    public CurrencyTrackRequest deleteTrackedCurrency(CurrencyTrackRequest request) {
+    public void deleteTrackedCurrency(CurrencyTrackRequest request) {
         currencyTrackRequestRepository.delete(request);
-        return request;
     }
 }

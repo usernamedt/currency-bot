@@ -2,6 +2,7 @@ package edu.urgu.oopteam.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.urgu.oopteam.models.Localization;
+import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,6 +19,7 @@ import java.util.stream.Stream;
 public class LocalizerService {
 
     private List<Localization> localizations;
+    private static final Logger LOGGER = Logger.getLogger(LocalizerService.class);
 
     private final String mainLanguageCode = "en";
 
@@ -32,7 +34,7 @@ public class LocalizerService {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("Problem with searching locale files", e);
         }
     }
 
@@ -67,7 +69,7 @@ public class LocalizerService {
             var fileContent = readFile(fileUri);
             return mapper.readValue(fileContent, Localization.class);
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("Error while reading a file", e);
             return null;
         }
     }

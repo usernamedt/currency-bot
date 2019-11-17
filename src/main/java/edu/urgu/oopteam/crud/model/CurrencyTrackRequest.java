@@ -30,6 +30,9 @@ public class CurrencyTrackRequest {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;
 
+    /**
+     * Needed for Spring to map entities from database !!!!!!!!!!!!!!!!!!!!!!DONOTDELETE
+     */
     public CurrencyTrackRequest() {
 
     }
