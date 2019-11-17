@@ -44,6 +44,7 @@ public class CurrencyBot {
      * @param settings Object which stores settings needed for a bot
      */
     public CurrencyBot(ApplicationContext context, IMessenger messenger, ConfigurationSettings settings) {
+        LOGGER.info("Bot started!!!");
         this.messenger = messenger;
         var jsonUpdateTimer = new Timer();
         var jsonUpdateTask = new TimerTask() {
