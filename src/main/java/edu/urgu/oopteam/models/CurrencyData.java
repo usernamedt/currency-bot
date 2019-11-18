@@ -8,7 +8,7 @@ public class CurrencyData {
     @JsonProperty("NumCode")
     private String numCode;
     @JsonProperty("CharCode")
-    private  String charCode;
+    private String charCode;
     @JsonProperty("Nominal")
     private String nominal;
     @JsonProperty("Name")
@@ -18,10 +18,11 @@ public class CurrencyData {
     @JsonProperty("Previous")
     private String previous;
 
-    public String getName(){
+    public String getName() {
         return name;
     }
-    public String getValue(){
+
+    public String getValue() {
         return value;
     }
 }

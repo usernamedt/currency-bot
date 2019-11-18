@@ -6,9 +6,9 @@ import edu.urgu.oopteam.crud.model.User;
 import edu.urgu.oopteam.models.CurrenciesJsonModel;
 import edu.urgu.oopteam.services.*;
 import javassist.NotFoundException;
+import org.apache.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 
-import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.Timer;
@@ -17,17 +17,15 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.apache.log4j.Logger;
-
 public class CurrencyBot {
     private final static String HELP_MESSAGE = "Hello, it's Currency Bot!" +
-            "\nI can show you some exchange rates. Use commands below:" +
-            "\n/help - to show this message and possible commands" +
-            "\n/curr {currency code} - to show specified currency to RUB exchange rate" +
-            "\n/track {currency code} {delta} - start to track specified currency rate and notify if it changes more/less than delta" +
-            "\n/untrack {currency code} - stop to track specified currency" +
-            "\n/allTracked - show all being tracked currencies" +
-            "\n/lang {language code} - set language (available languages: ru, en)";
+            "\r\nI can show you some exchange rates. Use commands below:" +
+            "\r\n/help - to show this message and possible commands" +
+            "\r\n/curr {currency code} - to show specified currency to RUB exchange rate" +
+            "\r\n/track {currency code} {delta} - start to track specified currency rate and notify if it changes more/less than delta" +
+            "\r\n/untrack {currency code} - stop to track specified currency" +
+            "\r\n/allTracked - show all being tracked currencies" +
+            "\r\n/lang {language code} - set language (available languages: ru, en)";
     private final static String UNKNOWN_REQ_MESSAGE = "I don't understand you, check if required command matches one of enlisted in /help message";
     private final static String JSON_PAGE_ADDRESS = "https://www.cbr-xml-daily.ru/daily_json.js";
     private static final Logger LOGGER = Logger.getLogger(CurrencyBot.class);
@@ -36,12 +34,12 @@ public class CurrencyBot {
     private ExecutorService pool = Executors.newFixedThreadPool(200);
     private ICurrencyTrackService currencyTrackService;
     private IUserService userService;
-    private LocalizerService localizer;
+    private TranslationsService localizer;
 
     /**
-     * @param context Spring application context
+     * @param context   Spring application context
      * @param messenger Some IMessenger implementation
-     * @param settings Object which stores settings needed for a bot
+     * @param settings  Object which stores settings needed for a bot
      */
     public CurrencyBot(ApplicationContext context, IMessenger messenger, ConfigurationSettings settings) {
         LOGGER.info("Bot started!!!");
@@ -61,10 +59,20 @@ public class CurrencyBot {
             }
         };
         jsonUpdateTimer.scheduleAtFixedRate(jsonUpdateTask, new Date(), 1000 * 60 * 60);
+        var loggerTimer = new Timer();
+        var loggerTask = new TimerTask() {
+            @Override
+            public void run() {
+                LOGGER.info("Hello INFO!");
+                LOGGER.error("Hello ERROR!");
+                LOGGER.warn("Hello WARN");
+            }
+        };
+        loggerTimer.scheduleAtFixedRate(loggerTask, new Date(), 1000 * 5);
         currencyTrackService = context.getBean(CurrencyTrackService.class);
         userService = context.getBean(UserService.class);
         messenger.setUpdateHandler(this::processMessageAsync);
-        localizer = new LocalizerService(Path.of(settings.getBotDataDir(), "locales").toString());
+        localizer = context.getBean(TranslationsService.class);
     }
 
     /**
@@ -98,7 +106,8 @@ public class CurrencyBot {
 
     /**
      * Parses a command then processes it
-     * @param chatId User's chat ID
+     *
+     * @param chatId      User's chat ID
      * @param userMessage User's message
      */
     private void processMessage(Long chatId, String userMessage) {
@@ -127,7 +136,8 @@ public class CurrencyBot {
 
     /**
      * Handles /lang command (which changes language to specified)
-     * @param chatId User's chat ID
+     *
+     * @param chatId      User's chat ID
      * @param userMessage User's message
      * @return Reply to a user
      */
@@ -145,6 +155,7 @@ public class CurrencyBot {
 
     /**
      * Handles /curr command (for more info use documentation)
+     *
      * @param userMessage User's message
      * @return Reply to a user (exchange rate for a currency)
      */
@@ -163,8 +174,9 @@ public class CurrencyBot {
 
     /**
      * Handles /track command (for more info use documentation)
-     * @param user User object
-     * @param chatId User's chat ID
+     *
+     * @param user        User object
+     * @param chatId      User's chat ID
      * @param userMessage User's message
      * @return Message for user that tells if everything processed right
      */
@@ -199,8 +211,9 @@ public class CurrencyBot {
 
     /**
      * Handles /untrack command (for more info use documentation)
-     * @param user User object
-     * @param chatId User's chat ID
+     *
+     * @param user        User object
+     * @param chatId      User's chat ID
      * @param userMessage User's message
      * @return Message for user that tells if everything processed right
      */
@@ -225,6 +238,7 @@ public class CurrencyBot {
 
     /**
      * Tries to download json from the net and parse it
+     *
      * @return True if downloaded was successful and false if not
      */
     private boolean tryUpdateJsonModel() {
@@ -243,6 +257,7 @@ public class CurrencyBot {
 
     /**
      * Runs a bot
+     *
      * @throws Exception Messenger starting exception
      */
     public void run() throws Exception {

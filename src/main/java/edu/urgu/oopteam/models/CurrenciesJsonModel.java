@@ -3,7 +3,6 @@ package edu.urgu.oopteam.models;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javassist.NotFoundException;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public class CurrenciesJsonModel {
@@ -20,6 +19,7 @@ public class CurrenciesJsonModel {
 
     /**
      * Gets exchange rate of the specified currency
+     *
      * @param currencyCode Code of the needed currency
      * @return Amount of rubles
      * @throws NotFoundException Exception connected with non-existing currency code
@@ -27,7 +27,7 @@ public class CurrenciesJsonModel {
     public double getExchangeRate(String currencyCode) throws NotFoundException {
         if (currencyDataMap.containsKey(currencyCode.toUpperCase()))
             return Double.parseDouble(currencyDataMap.get(currencyCode.toUpperCase()).getValue());
-        for (CurrencyData currency: currencyDataMap.values()) {
+        for (CurrencyData currency : currencyDataMap.values()) {
             if (currency.getName().equalsIgnoreCase(currencyCode))
                 return Double.parseDouble(currency.getValue());
         }

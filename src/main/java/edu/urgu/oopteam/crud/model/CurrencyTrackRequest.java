@@ -93,7 +93,8 @@ public class CurrencyTrackRequest {
     public User getUser() {
         return user;
     }
-    public void setUser(User user){
+
+    public void setUser(User user) {
         this.user = user;
     }
 
@@ -101,7 +102,7 @@ public class CurrencyTrackRequest {
     @Override
     public String toString() {
         return MessageFormat.format("CurrencyTrackRequest " +
-                "[id= {0}, chatId= {1}, baseRate= {2}, currencyCode= {3}, delta= {4}",
+                        "[id= {0}, chatId= {1}, baseRate= {2}, currencyCode= {3}, delta= {4}",
                 id, chatId, baseRate, currencyCode, delta);
     }
 

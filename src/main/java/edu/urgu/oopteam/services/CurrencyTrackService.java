@@ -25,20 +25,20 @@ public class CurrencyTrackService implements ICurrencyTrackService {
     }
 
     @Override
-    public List<CurrencyTrackRequest> findAllByChatId(long chatId){
+    public List<CurrencyTrackRequest> findAllByChatId(long chatId) {
         return currencyTrackRequestRepository.getAllByChatId(chatId);
     }
 
     @Override
     public CurrencyTrackRequest findTrackedCurrency(long chatId, String currencyCode) throws SQLException {
-            var trackedCurrenciesList = currencyTrackRequestRepository.findTrackedCurrencies(chatId, currencyCode);
-            if (trackedCurrenciesList.isEmpty()) {
-                return null;
-            }
-            if (trackedCurrenciesList.size() > 1) {
-                throw new SQLException("Smth wrong");
-            }
-            return trackedCurrenciesList.get(0);
+        var trackedCurrenciesList = currencyTrackRequestRepository.findTrackedCurrencies(chatId, currencyCode);
+        if (trackedCurrenciesList.isEmpty()) {
+            return null;
+        }
+        if (trackedCurrenciesList.size() > 1) {
+            throw new SQLException("Smth wrong");
+        }
+        return trackedCurrenciesList.get(0);
     }
 
     @Override

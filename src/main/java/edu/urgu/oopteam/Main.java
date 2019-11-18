@@ -1,23 +1,43 @@
 package edu.urgu.oopteam;
 
 import edu.urgu.oopteam.services.ConfigurationSettings;
+import edu.urgu.oopteam.services.FileService;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.PropertyConfigurator;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.telegram.telegrambots.ApiContextInitializer;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiRequestException;
 
 import java.io.IOException;
+import java.util.Properties;
 
 @SpringBootApplication
 public class Main {
     public static void main(String[] args) throws Exception {
-        //System.setProperty("https.protocols", "TLSv1.1,TLSv1.2");
-        // run spring app
-        ApplicationContext applicationContext = SpringApplication.run(Main.class);
+        if (args.length != 1) {
+            System.out.println("Please provide path to config.properties file");
+            return;
+        }
 
         // load settings from .properties file
-        var settings = new ConfigurationSettings();
+        var settings = new ConfigurationSettings(args[0]);
+
+        //configure log4j
+        Properties props = settings.getLoggerProperties();
+        try {
+            var propertiesFile = FileService.getInstance().readResourceFile("log4j.properties");
+            props.load(propertiesFile);
+        } catch (IOException e) {
+            System.out.println("Error: Cannot load configuration file ");
+        }
+        LogManager.resetConfiguration();
+        PropertyConfigurator.configure(props);
+
+        // run spring app
+        var springApplication = new SpringApplication(Main.class);
+        springApplication.setDefaultProperties(settings.getSpringProperties());
+        ApplicationContext applicationContext = springApplication.run();
 
         // telegram api context init
         ApiContextInitializer.init();
