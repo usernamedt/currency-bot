@@ -42,7 +42,6 @@ public class CurrencyBot {
      * @param settings  Object which stores settings needed for a bot
      */
     public CurrencyBot(ApplicationContext context, IMessenger messenger, ConfigurationSettings settings) {
-        LOGGER.info("Bot started!!!");
         this.messenger = messenger;
         var jsonUpdateTimer = new Timer();
         var jsonUpdateTask = new TimerTask() {
@@ -52,23 +51,9 @@ public class CurrencyBot {
                 if (success) {
                     notifyTrackedUsers();
                 }
-                /* Потом тут в случае неудачи нужно будет отправить сообщение всем пользователям бота,
-                что обновить данные не удалось, и они получат несколько устаревшие данные. *Или может это не нужно?
-                (Для реализации этого нужно хранить где-то(в БД) все id пользователей, которые уже
-                используют бота) */
             }
         };
         jsonUpdateTimer.scheduleAtFixedRate(jsonUpdateTask, new Date(), 1000 * 60 * 60);
-        var loggerTimer = new Timer();
-        var loggerTask = new TimerTask() {
-            @Override
-            public void run() {
-                LOGGER.info("Hello INFO!");
-                LOGGER.error("Hello ERROR!");
-                LOGGER.warn("Hello WARN");
-            }
-        };
-        loggerTimer.scheduleAtFixedRate(loggerTask, new Date(), 1000 * 5);
         currencyTrackService = context.getBean(CurrencyTrackService.class);
         userService = context.getBean(UserService.class);
         messenger.setUpdateHandler(this::processMessageAsync);
