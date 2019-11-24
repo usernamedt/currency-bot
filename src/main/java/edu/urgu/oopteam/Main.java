@@ -4,8 +4,8 @@ import edu.urgu.oopteam.services.ConfigurationSettings;
 import edu.urgu.oopteam.services.FileService;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.PropertyConfigurator;
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ApplicationContext;
 import org.telegram.telegrambots.ApiContextInitializer;
 
@@ -20,8 +20,20 @@ public class Main {
             return;
         }
 
+        // run spring app
+        ApplicationContext applicationContext;
+        try {
+            applicationContext = new SpringApplicationBuilder(Main.class)
+                    .properties("spring.config.location=file:///" + args[0])
+                    .build()
+                    .run();
+        } catch (Exception e) {
+            System.out.println("Houston, we've got problems!");
+            return;
+        }
+
         // load settings from .properties file
-        var settings = new ConfigurationSettings(args[0]);
+          var settings = applicationContext.getBean(ConfigurationSettings.class);
 
         //configure log4j
         Properties props = settings.getLoggerProperties();
@@ -34,10 +46,6 @@ public class Main {
         LogManager.resetConfiguration();
         PropertyConfigurator.configure(props);
 
-        // run spring app
-        var springApplication = new SpringApplication(Main.class);
-        springApplication.setDefaultProperties(settings.getSpringProperties());
-        ApplicationContext applicationContext = springApplication.run();
 
         // telegram api context init
         ApiContextInitializer.init();
