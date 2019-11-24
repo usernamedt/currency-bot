@@ -1,13 +1,13 @@
 package edu.urgu.oopteam.crud.model;
 
 import javax.persistence.*;
-import java.sql.Date;
+import java.util.Date;
 
 @Entity
-@Table(name = "cashExchangeRates")
+@Table(name = "cashexchangerates")
 public class CashExchangeRate {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
     @Column(name = "currency_code", nullable = false)
@@ -16,6 +16,12 @@ public class CashExchangeRate {
     @Column(name = "city_name", nullable = false)
     private String city;
 
+    @Column(name = "buy_bank_name", nullable = false)
+    private String buyBankName;
+
+    @Column(name = "sell_bank_name", nullable = false)
+    private String sellBankName;
+
     @Column(name = "buy_rate", nullable = false)
     private double buyRate;
 
@@ -23,17 +29,22 @@ public class CashExchangeRate {
     private double sellRate;
 
     @Column(name = "fetch_time", nullable = false)
+    @Temporal(TemporalType.DATE)
     private Date fetchTime;
+
 
     public CashExchangeRate() {
 
     }
 
-    public CashExchangeRate(String currencyCode, String city, double buyRate, double sellRate, Date fetchTime) {
+    public CashExchangeRate(String currencyCode, String city, double buyRate, String buyBankName,
+                            double sellRate, String sellBankName, Date fetchTime) {
         this.currencyCode = currencyCode;
         this.city = city;
         this.buyRate = buyRate;
         this.sellRate = sellRate;
+        this.buyBankName = buyBankName;
+        this.sellBankName = sellBankName;
         this.fetchTime = fetchTime;
     }
 
@@ -75,5 +86,21 @@ public class CashExchangeRate {
 
     public void setFetchTime(Date fetchTime) {
         this.fetchTime = fetchTime;
+    }
+
+    public String getBuyBankName() {
+        return buyBankName;
+    }
+
+    public void setBuyBankName(String buyBankName) {
+        this.buyBankName = buyBankName;
+    }
+
+    public String getSellBankName() {
+        return sellBankName;
+    }
+
+    public void setSellBankName(String sellBankName) {
+        this.sellBankName = sellBankName;
     }
 }

@@ -25,7 +25,8 @@ public class CurrencyBot {
             "\r\n/track {currency code} {delta} - start to track specified currency rate and notify if it changes more/less than delta" +
             "\r\n/untrack {currency code} - stop to track specified currency" +
             "\r\n/allTracked - show all being tracked currencies" +
-            "\r\n/lang {language code} - set language (available languages: ru, en)";
+            "\r\n/lang {language code} - set language (available languages: ru, en)" +
+            "\r\n/exchange {currency code} {city: moskva / ekaterinburg / sankt-peterburg}";
     private final static String UNKNOWN_REQ_MESSAGE = "I don't understand you, check if required command matches one of enlisted in /help message";
     private final static String JSON_PAGE_ADDRESS = "https://www.cbr-xml-daily.ru/daily_json.js";
     private static final Logger LOGGER = Logger.getLogger(CurrencyBot.class);
@@ -34,7 +35,8 @@ public class CurrencyBot {
     private ExecutorService pool = Executors.newFixedThreadPool(200);
     private ICurrencyTrackService currencyTrackService;
     private IUserService userService;
-    private TranslationsService localizer;
+    private ITranslationService localizer;
+    private ICurrencyCashExchangeService currencyCashExchangeService;
 
     /**
      * @param context   Spring application context
@@ -58,6 +60,7 @@ public class CurrencyBot {
         userService = context.getBean(UserService.class);
         messenger.setUpdateHandler(this::processMessageAsync);
         localizer = context.getBean(TranslationsService.class);
+        currencyCashExchangeService = context.getBean(CurrencyCashExchangeService.class);
     }
 
     /**
@@ -114,8 +117,34 @@ public class CurrencyBot {
             messenger.sendMessage(chatId, localizer.localize("Your current tracking requests:", user.getLanguageCode()) + "\n" + userRequests.toString());
         } else if (userMessage.startsWith("/lang ")) {
             messenger.sendMessage(chatId, localizer.localize(handleLang(chatId, userMessage), user.getLanguageCode()));
+        } else if (userMessage.startsWith("/exchange ")) {
+            messenger.sendMessage(chatId, localizer.localize(handleExchange(userMessage, user), user.getLanguageCode()));
+
         } else {
             messenger.sendMessage(chatId, localizer.localize(UNKNOWN_REQ_MESSAGE, user.getLanguageCode()));
+        }
+    }
+
+    /**
+     * Handles /exchange command
+     *
+     * @param userMessage User's message
+     * @return Reply to a user
+     */
+    private String handleExchange(String userMessage, User user) {
+        var message = userMessage.split(" ");
+        if (message.length != 3) {
+            return UNKNOWN_REQ_MESSAGE;
+        }
+        try {
+            var bestExchangeRate = currencyCashExchangeService.getCashExchangeRate(message[1], message[2]);
+            return localizer.localize("Best cash exchange rates:\n", user.getLanguageCode()) +
+                    localizer.localize("Buy rates:\n", user.getLanguageCode()) +
+                    bestExchangeRate.getBuyBankName() + " - " + bestExchangeRate.getBuyRate() + "\n" +
+                    localizer.localize("Sell rates:\n", user.getLanguageCode()) +
+                    bestExchangeRate.getSellBankName() + " - " + bestExchangeRate.getSellRate();
+        } catch (Exception e) {
+            return "Bad luck, sorry, try later lol :)";
         }
     }
 
@@ -229,7 +258,7 @@ public class CurrencyBot {
     private boolean tryUpdateJsonModel() {
         var mapper = new ObjectMapper();
         try {
-            var webPage = JsonDownloader.getJsonString(JSON_PAGE_ADDRESS, "UTF-8");
+            var webPage = WebService.getPageAsString(JSON_PAGE_ADDRESS, "UTF-8");
             currModel = mapper.readValue(webPage, CurrenciesJsonModel.class);
             return true;
         } catch (JsonProcessingException jException) {

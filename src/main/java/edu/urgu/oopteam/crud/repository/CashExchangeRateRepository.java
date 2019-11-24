@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface CashExchangeRateRepository extends JpaRepository<CashExchangeRate, Long> {
+    CashExchangeRate getByCurrencyCodeAndCity(String currencyCode, String city);
 }

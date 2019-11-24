@@ -15,7 +15,7 @@ import java.util.Properties;
 @SpringBootApplication
 public class Main {
     public static void main(String[] args) throws Exception {
-        if (args.length != 1) {
+        if (args.length != 1 && args[0] != null) {
             System.out.println("Please provide path to config.properties file");
             return;
         }
