@@ -16,10 +16,10 @@ public class CashExchangeRate {
     @Column(name = "city_name", nullable = false)
     private String city;
 
-    @Column(name = "buy_bank_name", nullable = false)
+    @Column(name = "buy_bank_name", nullable = false, columnDefinition = "nvarchar(2000)")
     private String buyBankName;
 
-    @Column(name = "sell_bank_name", nullable = false)
+    @Column(name = "sell_bank_name", nullable = false, columnDefinition = "nvarchar(2000)")
     private String sellBankName;
 
     @Column(name = "buy_rate", nullable = false)

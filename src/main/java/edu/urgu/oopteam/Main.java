@@ -24,7 +24,8 @@ public class Main {
         ApplicationContext applicationContext;
         try {
             applicationContext = new SpringApplicationBuilder(Main.class)
-                    .properties("spring.config.location=file:///" + args[0])
+                    .properties("spring.config.location=file:///" + args[0] +
+                            ",classpath:/application.properties")
                     .build()
                     .run();
         } catch (Exception e) {
