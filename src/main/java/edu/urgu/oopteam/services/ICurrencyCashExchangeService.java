@@ -10,5 +10,12 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 public interface ICurrencyCashExchangeService {
+    /**
+     * Get CashExchangeRate for provided city and currency
+     *
+     * @param currencyCode currency code
+     * @param city city name
+     * @return CashExchangeRate
+     */
     CashExchangeRate getCashExchangeRate(String currencyCode, String city) throws SQLException, IOException, ExecutionException, InterruptedException;
 }
