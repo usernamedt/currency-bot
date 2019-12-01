@@ -1,15 +1,13 @@
 package edu.urgu.oopteam.services;
 
+import org.springframework.stereotype.Service;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
 
+@Service
 public class FileService {
-
-    public static FileService getInstance() {
-        return LazyHolder.INSTANCE;
-    }
-
     /**
      * Read file from resource folder
      *
@@ -24,9 +22,5 @@ public class FileService {
         } else {
             return new FileInputStream(resource.getFile());
         }
-    }
-
-    private static final class LazyHolder {
-        private static final FileService INSTANCE = new FileService();
     }
 }

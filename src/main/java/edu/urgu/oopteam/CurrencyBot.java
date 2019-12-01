@@ -7,7 +7,8 @@ import edu.urgu.oopteam.models.CurrenciesJsonModel;
 import edu.urgu.oopteam.services.*;
 import javassist.NotFoundException;
 import org.apache.log4j.Logger;
-import org.springframework.context.ApplicationContext;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.sql.SQLException;
 import java.util.Date;
@@ -17,6 +18,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+@Component
 public class CurrencyBot {
     private final static String HELP_MESSAGE = "Hello, it's Currency Bot!" +
             "\r\nI can show you some exchange rates. Use commands below:" +
@@ -38,13 +40,14 @@ public class CurrencyBot {
     private ITranslationService localizer;
     private ICurrencyCashExchangeService currencyCashExchangeService;
 
-    /**
-     * @param context   Spring application context
-     * @param messenger Some IMessenger implementation
-     * @param settings  Object which stores settings needed for a bot
-     */
-    public CurrencyBot(ApplicationContext context, IMessenger messenger, ConfigurationSettings settings) {
+    @Autowired
+    public CurrencyBot(ICurrencyTrackService currencyTrackService,
+                       IUserService userService,
+                       ITranslationService localizer,
+                       ICurrencyCashExchangeService currencyCashExchangeService,
+                       IMessenger messenger) {
         this.messenger = messenger;
+        messenger.setUpdateHandler(this::processMessageAsync);
         var jsonUpdateTimer = new Timer();
         var jsonUpdateTask = new TimerTask() {
             @Override
@@ -56,11 +59,10 @@ public class CurrencyBot {
             }
         };
         jsonUpdateTimer.scheduleAtFixedRate(jsonUpdateTask, new Date(), 1000 * 60 * 60);
-        currencyTrackService = context.getBean(CurrencyTrackService.class);
-        userService = context.getBean(UserService.class);
-        messenger.setUpdateHandler(this::processMessageAsync);
-        localizer = context.getBean(TranslationsService.class);
-        currencyCashExchangeService = context.getBean(CurrencyCashExchangeService.class);
+        this.currencyTrackService = currencyTrackService;
+        this.userService = userService;
+        this.localizer = localizer;
+        this.currencyCashExchangeService = currencyCashExchangeService;
     }
 
     /**

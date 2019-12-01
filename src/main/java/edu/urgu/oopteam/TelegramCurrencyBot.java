@@ -2,6 +2,8 @@ package edu.urgu.oopteam;
 
 import edu.urgu.oopteam.services.ConfigurationSettings;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -10,11 +12,13 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiRequestException;
 
 
+@Component
 public class TelegramCurrencyBot extends TelegramLongPollingBot implements IMessenger {
     private final static Logger LOGGER = Logger.getLogger(TelegramCurrencyBot.class);
     private ConfigurationSettings configSettings;
     private TelegramUpdateHandler updateHandler;
 
+    @Autowired
     public TelegramCurrencyBot(ConfigurationSettings settings) {
         super();
         configSettings = settings;

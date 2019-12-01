@@ -20,6 +20,8 @@ public class Main {
             return;
         }
 
+        // telegram api context init
+        ApiContextInitializer.init();
         // run spring app
         ApplicationContext applicationContext;
         try {
@@ -34,12 +36,13 @@ public class Main {
         }
 
         // load settings from .properties file
-          var settings = applicationContext.getBean(ConfigurationSettings.class);
+        var settings = applicationContext.getBean(ConfigurationSettings.class);
 
         //configure log4j
         Properties props = settings.getLoggerProperties();
         try {
-            var propertiesFile = FileService.getInstance().readResourceFile("log4j.properties");
+            var fileService = applicationContext.getBean(FileService.class);
+            var propertiesFile = fileService.readResourceFile("log4j.properties");
             props.load(propertiesFile);
         } catch (IOException e) {
             System.out.println("Error: Cannot load configuration file ");
@@ -47,12 +50,10 @@ public class Main {
         LogManager.resetConfiguration();
         PropertyConfigurator.configure(props);
 
+        var telegramBot = applicationContext.getBean(TelegramCurrencyBot.class);
 
-        // telegram api context init
-        ApiContextInitializer.init();
-        var telegramBot = new TelegramCurrencyBot(settings);
         // init currency bot (he'll be alive)
-        var currencyBot = new CurrencyBot(applicationContext, telegramBot, settings);
+        var currencyBot = applicationContext.getBean(CurrencyBot.class);
         currencyBot.run();
     }
 }

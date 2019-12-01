@@ -73,8 +73,9 @@ public class CurrencyCashExchangeService implements ICurrencyCashExchangeService
 
     /**
      * Create CashExchangeRate entry in database
+     *
      * @param currencyCode code of the currency
-     * @param city city name
+     * @param city         city name
      * @return CashExchangeRate - created entity
      * @throws IOException exception if call to external web resource failed
      */
@@ -89,6 +90,7 @@ public class CurrencyCashExchangeService implements ICurrencyCashExchangeService
 
     /**
      * Update existing CashExchangeRate with new values from database
+     *
      * @param cashExchangeRate entity to update
      * @return CashExchangeRate - updated with actual data
      * @throws IOException exception if call to external web resource failed
@@ -108,8 +110,9 @@ public class CurrencyCashExchangeService implements ICurrencyCashExchangeService
 
     /**
      * Perform a request to external web resource to get updated exchange values
+     *
      * @param currencyCode code of the currency
-     * @param city city name
+     * @param city         city name
      * @return ResponseExchangeValue - fresh exchange buy/sell values
      * @throws IOException exception if call to external web resource failed
      */
@@ -127,6 +130,7 @@ public class CurrencyCashExchangeService implements ICurrencyCashExchangeService
 
     /**
      * Parse exchange data from provided JSoup element
+     *
      * @param element JSoup element
      * @return ExchangeData - parsed exchange data
      */
@@ -142,8 +146,9 @@ public class CurrencyCashExchangeService implements ICurrencyCashExchangeService
 
     /**
      * Form request URL address to receive data for provided city and currency
+     *
      * @param currencyCode code of the currency
-     * @param city city name
+     * @param city         city name
      * @return URL address of request with specified city and currency
      */
     private String getRequestAddress(String currencyCode, String city) {
@@ -152,6 +157,7 @@ public class CurrencyCashExchangeService implements ICurrencyCashExchangeService
 
     /**
      * Get request headers to pass the external web source checks
+     *
      * @return pairs of request headers
      */
     private List<Pair<String, String>> getRequestHeaders() {
