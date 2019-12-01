@@ -13,8 +13,6 @@ public class CurrencyTrackRequest {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
-    @Column(name = "chat_id", nullable = false)
-    private long chatId;
     // exchange rate for currency on the time of
     @Column(name = "base_rate", nullable = false)
     private double baseRate;
@@ -37,8 +35,7 @@ public class CurrencyTrackRequest {
 
     }
 
-    public CurrencyTrackRequest(Long chatId, double baseRate, String currencyCode, double delta, User user) {
-        this.chatId = chatId;
+    public CurrencyTrackRequest(double baseRate, String currencyCode, double delta, User user) {
         this.baseRate = baseRate;
         this.currencyCode = currencyCode;
         this.delta = delta;
@@ -53,16 +50,6 @@ public class CurrencyTrackRequest {
     public void setId(long id) {
         this.id = id;
     }
-
-
-    public long getChatId() {
-        return chatId;
-    }
-
-    public void setChatId(Long chatId) {
-        this.chatId = chatId;
-    }
-
 
     public double getBaseRate() {
         return baseRate;
@@ -102,8 +89,8 @@ public class CurrencyTrackRequest {
     @Override
     public String toString() {
         return MessageFormat.format("CurrencyTrackRequest " +
-                        "[id= {0}, chatId= {1}, baseRate= {2}, currencyCode= {3}, delta= {4}",
-                id, chatId, baseRate, currencyCode, delta);
+                        "[id= {0}, userId= {1}, baseRate= {2}, currencyCode= {3}, delta= {4}]",
+                id, user.getId(), baseRate, currencyCode, delta);
     }
 
 }

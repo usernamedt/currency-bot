@@ -32,20 +32,23 @@ public class CurrencyBot {
     private final static String UNKNOWN_REQ_MESSAGE = "I don't understand you, check if required command matches one of enlisted in /help message";
     private final static String JSON_PAGE_ADDRESS = "https://www.cbr-xml-daily.ru/daily_json.js";
     private static final Logger LOGGER = Logger.getLogger(CurrencyBot.class);
-    private CurrenciesJsonModel currModel;
+    CurrenciesJsonModel currModel;
     private IMessenger messenger;
     private ExecutorService pool = Executors.newFixedThreadPool(200);
     private ICurrencyTrackService currencyTrackService;
     private IUserService userService;
     private ITranslationService localizer;
     private ICurrencyCashExchangeService currencyCashExchangeService;
+    private WebService webService;
 
     @Autowired
     public CurrencyBot(ICurrencyTrackService currencyTrackService,
                        IUserService userService,
                        ITranslationService localizer,
                        ICurrencyCashExchangeService currencyCashExchangeService,
-                       IMessenger messenger) {
+                       IMessenger messenger,
+                       WebService webService
+                       ) {
         this.messenger = messenger;
         messenger.setUpdateHandler(this::processMessageAsync);
         var jsonUpdateTimer = new Timer();
@@ -63,12 +66,13 @@ public class CurrencyBot {
         this.userService = userService;
         this.localizer = localizer;
         this.currencyCashExchangeService = currencyCashExchangeService;
+        this.webService = webService;
     }
 
     /**
      * Notifies users which are tracking some currencies if delta is greater than requested
      */
-    private void notifyTrackedUsers() {
+    void notifyTrackedUsers() {
         var requests = currencyTrackService.findAll();
         requests.forEach(request -> {
             try {
@@ -80,7 +84,7 @@ public class CurrencyBot {
                                 "Rate of your tracked currency has changed",
                                 request.getUser().getLanguageCode()) + " " + request.getCurrencyCode();
 
-                        messenger.sendMessage(request.getChatId(), localizedMessage);
+                        messenger.sendMessage(request.getUser().getChatId(), localizedMessage);
                         currencyTrackService.deleteTrackedCurrency(request);
                     });
                 }
@@ -111,11 +115,11 @@ public class CurrencyBot {
         } else if (userMessage.startsWith("/curr ")) {
             messenger.sendMessage(chatId, localizer.localize(handleCurrCommand(userMessage), user.getLanguageCode()));
         } else if (userMessage.startsWith("/track ")) {
-            messenger.sendMessage(chatId, localizer.localize(handleTrackCommand(chatId, userMessage, user), user.getLanguageCode()));
+            messenger.sendMessage(chatId, localizer.localize(handleTrackCommand(userMessage, user), user.getLanguageCode()));
         } else if (userMessage.startsWith("/untrack ")) {
-            messenger.sendMessage(chatId, localizer.localize(handleUntrackCommand(chatId, userMessage, user), user.getLanguageCode()));
+            messenger.sendMessage(chatId, localizer.localize(handleUntrackCommand(userMessage, user), user.getLanguageCode()));
         } else if (userMessage.equals("/allTracked")) {
-            var userRequests = currencyTrackService.findAllByChatId(chatId);
+            var userRequests = currencyTrackService.findAllByUserId(user.getId());
             messenger.sendMessage(chatId, localizer.localize("Your current tracking requests:", user.getLanguageCode()) + "\n" + userRequests.toString());
         } else if (userMessage.startsWith("/lang ")) {
             messenger.sendMessage(chatId, localizer.localize(handleLang(chatId, userMessage), user.getLanguageCode()));
@@ -133,7 +137,7 @@ public class CurrencyBot {
      * @param userMessage User's message
      * @return Reply to a user
      */
-    private String handleExchange(String userMessage, User user) {
+    String handleExchange(String userMessage, User user) {
         var message = userMessage.split(" ");
         if (message.length != 3) {
             return UNKNOWN_REQ_MESSAGE;
@@ -157,7 +161,7 @@ public class CurrencyBot {
      * @param userMessage User's message
      * @return Reply to a user
      */
-    private String handleLang(long chatId, String userMessage) {
+    String handleLang(long chatId, String userMessage) {
         var message = userMessage.split(" ");
         if (message.length != 2) {
             return UNKNOWN_REQ_MESSAGE;
@@ -175,7 +179,7 @@ public class CurrencyBot {
      * @param userMessage User's message
      * @return Reply to a user (exchange rate for a currency)
      */
-    private String handleCurrCommand(String userMessage) {
+    String handleCurrCommand(String userMessage) {
         var message = userMessage.split(" ");
         if (message.length != 2) {
             return UNKNOWN_REQ_MESSAGE;
@@ -192,11 +196,10 @@ public class CurrencyBot {
      * Handles /track command (for more info use documentation)
      *
      * @param user        User object
-     * @param chatId      User's chat ID
      * @param userMessage User's message
      * @return Message for user that tells if everything processed right
      */
-    private String handleTrackCommand(Long chatId, String userMessage, User user) {
+    String handleTrackCommand(String userMessage, User user) {
         var args = userMessage.split(" ");
         if (args.length != 3) {
             return "This command should only have 2 parameters: currency code and delta";
@@ -211,7 +214,7 @@ public class CurrencyBot {
         }
 
         try {
-            var trackedCurrency = currencyTrackService.findTrackedCurrency(chatId, currencyCode);
+            var trackedCurrency = currencyTrackService.findTrackedCurrency(user.getId(), currencyCode);
             if (trackedCurrency == null) {
                 var trackRequest = currencyTrackService.addTrackedCurrency(currExchangeRate, currencyCode, delta, user);
                 return localizer.localize("New request added", user.getLanguageCode()) + "\n" + trackRequest.toString();
@@ -229,18 +232,17 @@ public class CurrencyBot {
      * Handles /untrack command (for more info use documentation)
      *
      * @param user        User object
-     * @param chatId      User's chat ID
      * @param userMessage User's message
      * @return Message for user that tells if everything processed right
      */
-    private String handleUntrackCommand(Long chatId, String userMessage, User user) {
+    String handleUntrackCommand(String userMessage, User user) {
         var args = userMessage.split(" ");
         if (args.length != 2) {
             return "This command should have 1 parameter";
         }
         var currencyCode = args[1];
         try {
-            var trackedCurrency = currencyTrackService.findTrackedCurrency(chatId, currencyCode);
+            var trackedCurrency = currencyTrackService.findTrackedCurrency(user.getId(), currencyCode);
             if (trackedCurrency == null) {
                 return "No such currency in the tracked list";
             }
@@ -260,7 +262,7 @@ public class CurrencyBot {
     private boolean tryUpdateJsonModel() {
         var mapper = new ObjectMapper();
         try {
-            var webPage = WebService.getPageAsString(JSON_PAGE_ADDRESS, "UTF-8");
+            var webPage = webService.getPageAsString(JSON_PAGE_ADDRESS, "UTF-8");
             currModel = mapper.readValue(webPage, CurrenciesJsonModel.class);
             return true;
         } catch (JsonProcessingException jException) {

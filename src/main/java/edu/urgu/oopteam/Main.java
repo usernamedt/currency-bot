@@ -15,13 +15,15 @@ import java.util.Properties;
 @SpringBootApplication
 public class Main {
     public static void main(String[] args) throws Exception {
-        if (args.length != 1 && args[0] != null) {
-            System.out.println("Please provide path to config.properties file");
+        if (args.length != 1 || args[0] == null) {
+            System.out.println("Please provide path to config.properties file\n" +
+                    "You can find an example in README.md");
             return;
         }
 
         // telegram api context init
         ApiContextInitializer.init();
+
         // run spring app
         ApplicationContext applicationContext;
         try {
@@ -37,11 +39,12 @@ public class Main {
 
         // load settings from .properties file
         var settings = applicationContext.getBean(ConfigurationSettings.class);
+        var currencyBot = applicationContext.getBean(CurrencyBot.class);
+        var fileService = applicationContext.getBean(FileService.class);
 
         //configure log4j
         Properties props = settings.getLoggerProperties();
         try {
-            var fileService = applicationContext.getBean(FileService.class);
             var propertiesFile = fileService.readResourceFile("log4j.properties");
             props.load(propertiesFile);
         } catch (IOException e) {
@@ -50,10 +53,7 @@ public class Main {
         LogManager.resetConfiguration();
         PropertyConfigurator.configure(props);
 
-        var telegramBot = applicationContext.getBean(TelegramCurrencyBot.class);
-
         // init currency bot (he'll be alive)
-        var currencyBot = applicationContext.getBean(CurrencyBot.class);
         currencyBot.run();
     }
 }

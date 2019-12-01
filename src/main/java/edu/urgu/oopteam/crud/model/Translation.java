@@ -32,7 +32,7 @@ public class Translation {
     @Override
     public String toString() {
         return MessageFormat.format("CurrencyTrackRequest " +
-                        "[id= {0}, en= {1}, ru= {2}",
+                        "[id= {0}, en= {1}, ru= {2}]",
                 id, en, ru);
     }
 }

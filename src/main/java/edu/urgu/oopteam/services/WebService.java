@@ -13,7 +13,7 @@ import java.util.List;
 
 @Service
 public class WebService {
-    public static String getPageAsString(String pageAddress, String codePage, List<Pair<String, String>> requestHeaders) throws IOException {
+    public String getPageAsString(String pageAddress, String codePage, List<Pair<String, String>> requestHeaders) throws IOException {
         StringBuilder sb = new StringBuilder();
         URL pageURL = new URL(pageAddress);
         URLConnection uc = pageURL.openConnection();
@@ -34,7 +34,7 @@ public class WebService {
     }
 
 
-    public static String getPageAsString(String pageAddress, String codePage) throws Exception {
+    public String getPageAsString(String pageAddress, String codePage) throws Exception {
         return getPageAsString(pageAddress, codePage, new ArrayList<>());
     }
 }

@@ -24,11 +24,13 @@ public class CurrencyCashExchangeService implements ICurrencyCashExchangeService
     private static final int FETCH_RATE = 30;
     private static final Hashtable<Pair<String, String>, CompletableFuture<CashExchangeRate>> cachedExchangeRequests = new Hashtable<>();
     private final CashExchangeRateRepository cashExchangeRateRepository;
+    private WebService webService;
 
 
     @Autowired
-    public CurrencyCashExchangeService(CashExchangeRateRepository cashExchangeRateRepository) {
+    public CurrencyCashExchangeService(CashExchangeRateRepository cashExchangeRateRepository, WebService webService) {
         this.cashExchangeRateRepository = cashExchangeRateRepository;
+        this.webService = webService;
     }
 
     /**
@@ -117,7 +119,7 @@ public class CurrencyCashExchangeService implements ICurrencyCashExchangeService
      * @throws IOException exception if call to external web resource failed
      */
     private ResponseExchangeValue fetchExchangeValues(String currencyCode, String city) throws IOException {
-        var response = WebService.getPageAsString(getRequestAddress(currencyCode, city), "UTF-8",
+        var response = webService.getPageAsString(getRequestAddress(currencyCode, city), "UTF-8",
                 getRequestHeaders());
 
         var page = Jsoup.parse(response);

@@ -29,7 +29,7 @@ public interface ICurrencyTrackService {
      */
     void updateTrackedCurrency(CurrencyTrackRequest request, double delta, double currExchangeRate);
 
-    List<CurrencyTrackRequest> findAllByChatId(long chatId);
+    List<CurrencyTrackRequest> findAllByUserId(long chatId);
 
     /**
      * Deletes tracking request from database

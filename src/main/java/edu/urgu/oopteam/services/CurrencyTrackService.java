@@ -25,13 +25,13 @@ public class CurrencyTrackService implements ICurrencyTrackService {
     }
 
     @Override
-    public List<CurrencyTrackRequest> findAllByChatId(long chatId) {
-        return currencyTrackRequestRepository.getAllByChatId(chatId);
+    public List<CurrencyTrackRequest> findAllByUserId(long userId) {
+        return currencyTrackRequestRepository.getAllByUserId(userId);
     }
 
     @Override
-    public CurrencyTrackRequest findTrackedCurrency(long chatId, String currencyCode) throws SQLException {
-        var trackedCurrenciesList = currencyTrackRequestRepository.findTrackedCurrencies(chatId, currencyCode);
+    public CurrencyTrackRequest findTrackedCurrency(long userId, String currencyCode) throws SQLException {
+        var trackedCurrenciesList = currencyTrackRequestRepository.findByUserIdAndCurrencyCode(userId, currencyCode);
         if (trackedCurrenciesList.isEmpty()) {
             return null;
         }
@@ -43,7 +43,7 @@ public class CurrencyTrackService implements ICurrencyTrackService {
 
     @Override
     public CurrencyTrackRequest addTrackedCurrency(double baseRate, String currencyCode, double delta, User user) {
-        var trackRequest = new CurrencyTrackRequest(user.getChatId(), baseRate, currencyCode, delta, user);
+        var trackRequest = new CurrencyTrackRequest(baseRate, currencyCode, delta, user);
         currencyTrackRequestRepository.save(trackRequest);
         return trackRequest;
     }

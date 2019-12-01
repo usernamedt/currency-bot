@@ -46,6 +46,8 @@ public class User {
         this.chatId = chatId;
     }
 
+    public long getId() {return id;}
+
     @Override
     public String toString() {
         return MessageFormat.format("[id= {0}, chatId= {1}, languageCode= {2}]", id, chatId, languageCode);
