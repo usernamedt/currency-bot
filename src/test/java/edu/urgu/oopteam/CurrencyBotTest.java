@@ -47,10 +47,11 @@ public class CurrencyBotTest {
     @Test
     public void testSendTrackCommand() {
         var user = new User(1, "ru");
-        var response = currencyBot.handleTrackCommand("/track USD -1", user);
+        var message = new Message(user.getChatId(), "/track USD -1");
+        var response = currencyBot.handleTrackCommand(message);
 
         assertEquals("New request added\n" +
-                        "CurrencyTrackRequest [id= 0, userId= 0, baseRate= 64.082, currencyCode= usd, delta= -1",
+                        "CurrencyTrackRequest [id= 0, userId= 0, baseRate= 64.082, currencyCode= usd, delta= -1]",
                 response);
     }
 

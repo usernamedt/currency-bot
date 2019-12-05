@@ -13,7 +13,7 @@ public interface IUserService {
      * Creates user in database with specified chat ID
      *
      * @param chatId
-     * @return Just created user
+     * @return Newly created user
      */
     User createUser(long chatId);
 
@@ -24,4 +24,18 @@ public interface IUserService {
      * @param languageCode Code of the language
      */
     void setLanguage(long chatId, String languageCode);
+
+    /**
+     * Load existing user or create new and return it
+     *
+     * @param chatId       User's chat ID
+     */
+    default User getExistingOrNewUser(long chatId){
+        var user = getFirstByChatId(chatId);
+        if (user == null) {
+            user = createUser(chatId);
+        }
+        return user;
+    }
+
 }

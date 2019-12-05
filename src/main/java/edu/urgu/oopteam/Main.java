@@ -15,8 +15,8 @@ import java.util.Properties;
 @SpringBootApplication
 public class Main {
     public static void main(String[] args) throws Exception {
-        if (args.length != 1 || args[0] == null) {
-            System.out.println("Please provide path to config.properties file\n" +
+        if (args.length != 2 || args[0] == null || args[1] == null) {
+            System.out.println("Please provide path to config.properties files\n" +
                     "You can find an example in README.md");
             return;
         }
@@ -28,8 +28,7 @@ public class Main {
         ApplicationContext applicationContext;
         try {
             applicationContext = new SpringApplicationBuilder(Main.class)
-                    .properties("spring.config.location=file:///" + args[0] +
-                            ",classpath:/application.properties")
+                    .properties("spring.config.location=file:///" + args[1])
                     .build()
                     .run();
         } catch (Exception e) {
@@ -38,22 +37,9 @@ public class Main {
         }
 
         // load settings from .properties file
-        var settings = applicationContext.getBean(ConfigurationSettings.class);
-        var currencyBot = applicationContext.getBean(CurrencyBot.class);
-        var fileService = applicationContext.getBean(FileService.class);
-
-        //configure log4j
-        Properties props = settings.getLoggerProperties();
-        try {
-            var propertiesFile = fileService.readResourceFile("log4j.properties");
-            props.load(propertiesFile);
-        } catch (IOException e) {
-            System.out.println("Error: Cannot load configuration file ");
-        }
-        LogManager.resetConfiguration();
-        PropertyConfigurator.configure(props);
+        var currencyBotDecorator = applicationContext.getBean(CurrencyBotDecorator.class);
 
         // init currency bot (he'll be alive)
-        currencyBot.run();
+        currencyBotDecorator.run();
     }
 }

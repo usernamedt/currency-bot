@@ -13,14 +13,12 @@ public class ConfigurationSettings {
     private String botToken;
     @Value("${bot.data.directory}")
     private String botDataDir;
-    @Value("${spring.datasource.url}")
-    private String springDatasourceUrl;
-    @Value("${spring.datasource.username}")
-    private String springDatasourceUsername;
-    @Value("${spring.datasource.password}")
-    private String springDatasourcePassword;
-    @Value("${log.outputPath}")
-    private String logOutputPath;
+//    @Value("${spring.datasource.url}")
+//    private String springDatasourceUrl;
+//    @Value("${spring.datasource.username}")
+//    private String springDatasourceUsername;
+//    @Value("${spring.datasource.password}")
+//    private String springDatasourcePassword;
 
     public ConfigurationSettings() {
     }
@@ -35,11 +33,5 @@ public class ConfigurationSettings {
 
     public String getBotDataDir() {
         return botDataDir;
-    }
-
-    public Properties getLoggerProperties() {
-        var props = new Properties();
-        props.put("log4j.appender.file.File", logOutputPath);
-        return props;
     }
 }
