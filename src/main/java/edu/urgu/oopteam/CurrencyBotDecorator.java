@@ -62,7 +62,7 @@ public class CurrencyBotDecorator {
         } else if (userMessage.startsWith("/untrack ")) {
             messenger.sendMessage(chatId, currencyBot.handleUntrackCommand(message).getMessage());
         } else if (userMessage.equals("/allTracked")) {
-            messenger.sendMessage(chatId, currencyBot.handleAllTrackedCommand(message));
+            messenger.sendMessage(chatId, currencyBot.handleAllTrackedCommand(message).getMessage());
         } else if (userMessage.startsWith("/lang ")) {
             messenger.sendMessage(chatId, currencyBot.handleLangCommand(message));
         } else if (userMessage.startsWith("/exchange ")) {

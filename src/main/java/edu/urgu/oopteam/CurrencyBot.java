@@ -236,10 +236,13 @@ public class CurrencyBot {
      * @param message User's message
      * @return Message for user that tells if everything processed right
      */
-    String handleAllTrackedCommand(Message message) {
+    IBotResponse handleAllTrackedCommand(Message message) {
         var user = userService.getExistingOrNewUser(message.getChatId());
         var userRequests = currencyTrackService.findAllByUserId(user.getId());
-        return localizer.localize("Your current tracking requests:", user.getLanguageCode()) + "\n" + userRequests.toString();
+        if (userRequests.isEmpty()) {
+            return new StringResponse(localizer.localize("You don't have any tracking requests yet", user.getLanguageCode()));
+        }
+        return new AllTrackedResponse(userRequests, localizer.localize("Your current tracking requests:", user.getLanguageCode()));
     }
 
 

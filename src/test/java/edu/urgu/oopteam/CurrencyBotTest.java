@@ -3,17 +3,11 @@ package edu.urgu.oopteam;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.urgu.oopteam.crud.model.CurrencyTrackRequest;
 import edu.urgu.oopteam.crud.model.User;
-import edu.urgu.oopteam.crud.repository.CurrencyTrackRequestRepository;
-import edu.urgu.oopteam.crud.repository.UserRepository;
 import edu.urgu.oopteam.models.CurrenciesJsonModel;
 import edu.urgu.oopteam.services.*;
-import edu.urgu.oopteam.viewmodels.BotReponses.ExchangeResponse;
-import edu.urgu.oopteam.viewmodels.BotReponses.CurrResponse;
-import edu.urgu.oopteam.viewmodels.BotReponses.StringResponse;
-import edu.urgu.oopteam.viewmodels.BotReponses.TrackResponse;
+import edu.urgu.oopteam.viewmodels.BotReponses.*;
 import edu.urgu.oopteam.viewmodels.BuySellExchangeRates;
 import edu.urgu.oopteam.viewmodels.ExchangeData;
-import org.checkerframework.checker.units.qual.A;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.runner.RunWith;
@@ -27,7 +21,10 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.ArrayList;
+import java.util.List;
 
+import static junit.framework.TestCase.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
@@ -35,8 +32,8 @@ import static org.mockito.Mockito.*;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @TestPropertySource(locations="classpath:test.properties")
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class CurrencyBotTest {
-    FileService fileService = new FileService();
     @MockBean
     ITranslationService localizer;
     @MockBean
@@ -45,7 +42,31 @@ public class CurrencyBotTest {
     WebService webService;
 
     @Autowired
+    FileService fileService;
+    @Autowired
     CurrencyBot currencyBot;
+
+    @Before
+    public void setUp() throws Exception {
+        // to load currency data from JSON instead of URL
+        var jsonString = fileService.readResourceFileAsString("daily_json.json");
+        var mapper = new ObjectMapper();
+        currencyBot.currModel = mapper.readValue(jsonString, CurrenciesJsonModel.class);
+
+        when(this.webService.getPageAsString("https://www.cbr-xml-daily.ru/daily_json.js","UTF-8"))
+                .thenReturn(jsonString);
+
+        var usdMoscowSample = fileService.readResourceFileAsString("usd_moscow.html");
+
+        when(this.webService.getPageAsString(
+                eq("https://banki.ru/products/currency/best_rates_summary/bank/usd/moskva/"),
+                eq("UTF-8"), any()))
+                .thenReturn(usdMoscowSample);
+
+        when(this.localizer.localize(anyString(), anyString()))
+                .thenAnswer(i -> i.getArguments()[0]);
+
+    }
 
     @Test
     public void testExchangeCommand() {
@@ -102,25 +123,39 @@ public class CurrencyBotTest {
         assertEquals(expectedRequest.getMessage(), response.getMessage());
     }
 
-    @Before
-    public void setUp() throws Exception {
-        // to load currency data from JSON instead of URL
-        var jsonString = fileService.readResourceFileAsString("daily_json.json");
-        var mapper = new ObjectMapper();
-        currencyBot.currModel = mapper.readValue(jsonString, CurrenciesJsonModel.class);
 
-        when(this.webService.getPageAsString("https://www.cbr-xml-daily.ru/daily_json.js","UTF-8"))
-                .thenReturn(jsonString);
+    @Test
+    public void testUntrackCommand_Exists() {
+        var user = new User(1, "ru");
+        var message = new Message(user.getChatId(), "/untrack usd");
+        var expectedRequest = new CurrencyTrackRequest(64.0817, "usd", -10, user);
 
-        var usdMoscowSample = fileService.readResourceFileAsString("usd_moscow.html");
 
-        when(this.webService.getPageAsString(
-                eq("https://banki.ru/products/currency/best_rates_summary/bank/usd/moskva/"),
-                eq("UTF-8"), any()))
-                .thenReturn(usdMoscowSample);
+        var trackMessage = new Message(user.getChatId(), "/track usd -10");
 
-        when(this.localizer.localize(anyString(), anyString()))
-                .thenAnswer(i -> i.getArguments()[0]);
+        currencyBot.handleTrackCommand(trackMessage);
 
+        var response = (TrackResponse) currencyBot.handleUntrackCommand(message);
+
+        assertEquals(response.currencyTrackRequest.getDelta(), expectedRequest.getDelta(), 0.001);
+        assertEquals(response.currencyTrackRequest.getCurrencyCode(), expectedRequest.getCurrencyCode());
+    }
+
+    @Test
+    public void testShowingAllTrackedCommand() {
+        var user = new User(1, "ru");
+        var message = new Message(user.getChatId(), "/allTracked");
+        currencyBot.handleTrackCommand(new Message(user.getChatId(),  "/track usd 3"));
+        currencyBot.handleTrackCommand(new Message(user.getChatId(),  "/track eur 5"));
+
+        var expectedRequests = List.of(
+                new CurrencyTrackRequest(64.0817, "usd", 3, user),
+                new CurrencyTrackRequest(70.5475, "eur", 5, user)
+        );
+
+        var actualResponse = (AllTrackedResponse) currencyBot.handleAllTrackedCommand(message);
+
+        assertThat(expectedRequests).usingElementComparatorIgnoringFields("id", "user").containsAll(actualResponse.requests);
+        assertThat(actualResponse.requests).usingElementComparatorIgnoringFields("id", "user").containsAll(expectedRequests);
     }
 }

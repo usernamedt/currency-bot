@@ -16,7 +16,7 @@ import java.util.Properties;
 public class Main {
     public static void main(String[] args) throws Exception {
         if (args.length != 2 || args[0] == null || args[1] == null) {
-            System.out.println("Please provide path to config.properties files\n" +
+            System.out.println("Please provide path to application.properties file and log4j.properties file\n" +
                     "You can find an example in README.md");
             return;
         }
