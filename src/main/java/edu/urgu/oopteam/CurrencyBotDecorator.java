@@ -56,17 +56,17 @@ public class CurrencyBotDecorator {
         if ("/help".equals(userMessage) || "/start".equals(userMessage)) {
             messenger.sendMessage(chatId, currencyBot.handleHelpCommand(message));
         } else if (userMessage.startsWith("/curr ")) {
-            messenger.sendMessage(chatId, currencyBot.handleCurrCommand(message));
+            messenger.sendMessage(chatId, currencyBot.handleCurrCommand(message).getMessage());
         } else if (userMessage.startsWith("/track ")) {
-            messenger.sendMessage(chatId, currencyBot.handleTrackCommand(message));
+            messenger.sendMessage(chatId, currencyBot.handleTrackCommand(message).getMessage());
         } else if (userMessage.startsWith("/untrack ")) {
-            messenger.sendMessage(chatId, currencyBot.handleUntrackCommand(message));
+            messenger.sendMessage(chatId, currencyBot.handleUntrackCommand(message).getMessage());
         } else if (userMessage.equals("/allTracked")) {
             messenger.sendMessage(chatId, currencyBot.handleAllTrackedCommand(message));
         } else if (userMessage.startsWith("/lang ")) {
             messenger.sendMessage(chatId, currencyBot.handleLangCommand(message));
         } else if (userMessage.startsWith("/exchange ")) {
-            messenger.sendMessage(chatId, currencyBot.handleExchangeCommand(message));
+            messenger.sendMessage(chatId, currencyBot.handleExchangeCommand(message).getMessage());
         } else {
             messenger.sendMessage(chatId, currencyBot.getUnknownReqMessage(message));
         }

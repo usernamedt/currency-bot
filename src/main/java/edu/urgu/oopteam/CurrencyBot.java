@@ -2,9 +2,9 @@ package edu.urgu.oopteam;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.urgu.oopteam.crud.model.User;
 import edu.urgu.oopteam.models.CurrenciesJsonModel;
 import edu.urgu.oopteam.services.*;
+import edu.urgu.oopteam.viewmodels.BotReponses.*;
 import javassist.NotFoundException;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -99,21 +99,23 @@ public class CurrencyBot {
      * @param message User's message
      * @return Reply to a user
      */
-    String handleExchangeCommand(Message message) {
+    IBotResponse handleExchangeCommand(Message message) {
         var user = userService.getExistingOrNewUser(message.getChatId());
         var messageArgs = message.getMessageBody().split(" ");
         if (messageArgs.length != 3) {
-            return UNKNOWN_REQ_MESSAGE;
+            return new StringResponse(UNKNOWN_REQ_MESSAGE);
         }
         try {
             var bestExchangeRate = currencyCashExchangeService.getCashExchangeRate(messageArgs[1], messageArgs[2]);
-            return localizer.localize("Best cash exchange rates:\n", user.getLanguageCode()) +
+            var responseMessage = localizer.localize("Best cash exchange rates:\n", user.getLanguageCode()) +
                     localizer.localize("Buy rates:\n", user.getLanguageCode()) +
                     bestExchangeRate.getBuyBankName() + " - " + bestExchangeRate.getBuyRate() + "\n" +
                     localizer.localize("Sell rates:\n", user.getLanguageCode()) +
                     bestExchangeRate.getSellBankName() + " - " + bestExchangeRate.getSellRate();
+
+            return new ExchangeResponse(bestExchangeRate, responseMessage);
         } catch (Exception e) {
-            return "Bad luck, sorry, try later lol :)";
+            return new StringResponse("Bad luck: \n" + e.toString());
         }
     }
 
@@ -142,18 +144,19 @@ public class CurrencyBot {
      * @param message User's message
      * @return Reply to a user (exchange rate for a currency)
      */
-    String handleCurrCommand(Message message) {
+    IBotResponse handleCurrCommand(Message message) {
         var user = userService.getExistingOrNewUser(message.getChatId());
         var messageArgs = message.getMessageBody().split(" ");
         if (messageArgs.length != 2) {
-            return localizer.localize(UNKNOWN_REQ_MESSAGE, user.getLanguageCode());
+            return new StringResponse(localizer.localize(UNKNOWN_REQ_MESSAGE, user.getLanguageCode()));
         }
         try {
             double exRate = currModel.getExchangeRate(messageArgs[1]);
-            return exRate + " RUB";
+            return new CurrResponse(exRate);
         } catch (NotFoundException e) {
-            return localizer.localize("I don't know this currency, please check supporting currencies",
-                    user.getLanguageCode());
+            return new StringResponse(
+                    localizer.localize("I don't know this currency, please check supporting currencies",
+                    user.getLanguageCode()));
         }
     }
 
@@ -163,12 +166,12 @@ public class CurrencyBot {
      * @param message User's message
      * @return Message for user that tells if everything processed right
      */
-    String handleTrackCommand(Message message) {
+    IBotResponse handleTrackCommand(Message message) {
         var user = userService.getExistingOrNewUser(message.getChatId());
         var messageArgs = message.getMessageBody().split(" ");
         if (messageArgs.length != 3) {
-            return localizer.localize("This command should only have 2 parameters: currency code and delta",
-                    user.getLanguageCode());
+            return new StringResponse(localizer.localize("This command should only have 2 parameters: currency code and delta",
+                    user.getLanguageCode()));
         }
         var currencyCode = messageArgs[1].toLowerCase();
         var delta = Double.parseDouble(messageArgs[2]);
@@ -176,21 +179,22 @@ public class CurrencyBot {
         try {
             currExchangeRate = currModel.getExchangeRate(currencyCode);
         } catch (NotFoundException e) {
-            return e.getMessage();
+            return new StringResponse(e.getMessage());
         }
 
         try {
             var trackedCurrency = currencyTrackService.findTrackedCurrency(user.getId(), currencyCode);
             if (trackedCurrency == null) {
                 var trackRequest = currencyTrackService.addTrackedCurrency(currExchangeRate, currencyCode, delta, user);
-                return localizer.localize("New request added", user.getLanguageCode()) + "\n" + trackRequest.toString();
+                return new TrackResponse(trackRequest,
+                        localizer.localize("New request added", user.getLanguageCode()));
             }
             currencyTrackService.updateTrackedCurrency(trackedCurrency, delta, currExchangeRate);
-            return localizer.localize("Existing request has been updated", user.getLanguageCode()) + "\n" + trackedCurrency.toString();
+            return new TrackResponse(trackedCurrency, localizer.localize("Existing request has been updated", user.getLanguageCode()));
 
         } catch (SQLException e) {
             LOGGER.error(e.getMessage());
-            return localizer.localize("Internal bot error, try to use this command later", user.getLanguageCode());
+            return new StringResponse(localizer.localize("Internal bot error, try to use this command later", user.getLanguageCode()));
         }
     }
 
@@ -200,23 +204,28 @@ public class CurrencyBot {
      * @param message User's message
      * @return Message for user that tells if everything processed right
      */
-    String handleUntrackCommand(Message message) {
+    IBotResponse handleUntrackCommand(Message message) {
         var user = userService.getExistingOrNewUser(message.getChatId());
         var messageArgs = message.getMessageBody().split(" ");
         if (messageArgs.length != 2) {
-            return localizer.localize("This command should have 1 parameter", user.getLanguageCode());
+            return new StringResponse(
+                    localizer.localize("This command should have 1 parameter", user.getLanguageCode()));
         }
         var currencyCode = messageArgs[1];
         try {
             var trackedCurrency = currencyTrackService.findTrackedCurrency(user.getId(), currencyCode);
             if (trackedCurrency == null) {
-                return localizer.localize("No such currency in the tracked list", user.getLanguageCode());
+                return new StringResponse(
+                        localizer.localize("No such currency in the tracked list", user.getLanguageCode()));
             }
             currencyTrackService.deleteTrackedCurrency(trackedCurrency);
-            return localizer.localize("This tracking request has been successfully cancelled", user.getLanguageCode()) + "\n" + trackedCurrency.toString();
+            return new TrackResponse(trackedCurrency,
+                    localizer.localize("This tracking request has been successfully cancelled",
+                            user.getLanguageCode()));
         } catch (SQLException e) {
             LOGGER.error(e.getMessage());
-            return localizer.localize("Internal bot error, try to use this command later", user.getLanguageCode());
+            return new StringResponse(localizer.localize("Internal bot error, try to use this command later",
+                    user.getLanguageCode()));
         }
     }
 

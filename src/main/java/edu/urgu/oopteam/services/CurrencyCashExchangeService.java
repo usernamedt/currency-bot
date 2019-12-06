@@ -2,6 +2,8 @@ package edu.urgu.oopteam.services;
 
 import edu.urgu.oopteam.crud.model.CashExchangeRate;
 import edu.urgu.oopteam.crud.repository.CashExchangeRateRepository;
+import edu.urgu.oopteam.viewmodels.BuySellExchangeRates;
+import edu.urgu.oopteam.viewmodels.ExchangeData;
 import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
@@ -62,7 +64,8 @@ public class CurrencyCashExchangeService implements ICurrencyCashExchangeService
                         return rate == null
                                 ? createCashExchangeRate(currencyCode, city)
                                 : isRateActual(rate) ? rate : updateCashExchangeRate(rate);
-                    } catch (IOException e) {
+                    } catch (IOException e)
+                    {
                         LOGGER.error(e);
                         return null;
                     }
@@ -84,8 +87,9 @@ public class CurrencyCashExchangeService implements ICurrencyCashExchangeService
     private CashExchangeRate createCashExchangeRate(String currencyCode, String city) throws IOException {
         var exchangeRate = fetchExchangeValues(currencyCode, city);
 
-        var rate = new CashExchangeRate(currencyCode, city, exchangeRate.buyData.rate, exchangeRate.buyData.bankName,
-                exchangeRate.sellData.rate, exchangeRate.sellData.bankName, new Date());
+        var rate = new CashExchangeRate(currencyCode, city, exchangeRate.getBuyData().getRate(),
+                exchangeRate.getBuyData().getBankName(),
+                exchangeRate.getSellData().getRate(), exchangeRate.getSellData().getBankName(), new Date());
         cashExchangeRateRepository.save(rate);
         return rate;
     }
@@ -100,10 +104,10 @@ public class CurrencyCashExchangeService implements ICurrencyCashExchangeService
     private CashExchangeRate updateCashExchangeRate(CashExchangeRate cashExchangeRate) throws IOException {
         var updatedRate = fetchExchangeValues(cashExchangeRate.getCurrencyCode(), cashExchangeRate.getCity());
 
-        cashExchangeRate.setBuyRate(updatedRate.buyData.rate);
-        cashExchangeRate.setBuyBankName(updatedRate.buyData.bankName);
-        cashExchangeRate.setSellRate(updatedRate.sellData.rate);
-        cashExchangeRate.setSellBankName(updatedRate.sellData.bankName);
+        cashExchangeRate.setBuyRate(updatedRate.getBuyData().getRate());
+        cashExchangeRate.setBuyBankName(updatedRate.getBuyData().getBankName());
+        cashExchangeRate.setSellRate(updatedRate.getSellData().getRate());
+        cashExchangeRate.setSellBankName(updatedRate.getSellData().getBankName());
         cashExchangeRate.setFetchTime(new Date());
 
         cashExchangeRateRepository.save(cashExchangeRate);
@@ -115,10 +119,10 @@ public class CurrencyCashExchangeService implements ICurrencyCashExchangeService
      *
      * @param currencyCode code of the currency
      * @param city         city name
-     * @return ResponseExchangeValue - fresh exchange buy/sell values
+     * @return BuySellExchangeRates - fresh exchange buy/sell values
      * @throws IOException exception if call to external web resource failed
      */
-    private ResponseExchangeValue fetchExchangeValues(String currencyCode, String city) throws IOException {
+    private BuySellExchangeRates fetchExchangeValues(String currencyCode, String city) throws IOException {
         var response = webService.getPageAsString(getRequestAddress(currencyCode, city), "UTF-8",
                 getRequestHeaders());
 
@@ -127,7 +131,7 @@ public class CurrencyCashExchangeService implements ICurrencyCashExchangeService
         var buyData = extractExchangeData(exchangeData.first());
         var sellData = extractExchangeData(exchangeData.last());
 
-        return new ResponseExchangeValue(buyData, sellData);
+        return new BuySellExchangeRates(buyData, sellData);
     }
 
     /**
@@ -167,34 +171,5 @@ public class CurrencyCashExchangeService implements ICurrencyCashExchangeService
                 Pair.of("Cookie", "BANKI_RU_GUEST_ID=693599905; BANKI_RU_USER_IDENTITY_UID=2554564999135270847;"),
                 Pair.of("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:70.0) Gecko/20100101 Firefox/70.0"),
                 Pair.of("X-Requested-With", "XMLHttpRequest"));
-    }
-
-
-    // UTILITY CLASSES
-
-    /**
-     * Holds currency buy/sell information (rate and bank name)
-     */
-    private class ResponseExchangeValue {
-        ExchangeData buyData;
-        ExchangeData sellData;
-
-        ResponseExchangeValue(ExchangeData buyData, ExchangeData sellData) {
-            this.buyData = buyData;
-            this.sellData = sellData;
-        }
-    }
-
-    /**
-     * Holds currency exchange rate and associated bank name
-     */
-    private class ExchangeData {
-        String bankName;
-        double rate;
-
-        ExchangeData(String bankName, double rate) {
-            this.bankName = bankName;
-            this.rate = rate;
-        }
     }
 }

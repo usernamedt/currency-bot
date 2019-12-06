@@ -3,22 +3,32 @@ package edu.urgu.oopteam;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.urgu.oopteam.crud.model.CurrencyTrackRequest;
 import edu.urgu.oopteam.crud.model.User;
+import edu.urgu.oopteam.crud.repository.CurrencyTrackRequestRepository;
+import edu.urgu.oopteam.crud.repository.UserRepository;
 import edu.urgu.oopteam.models.CurrenciesJsonModel;
 import edu.urgu.oopteam.services.*;
+import edu.urgu.oopteam.viewmodels.BotReponses.ExchangeResponse;
+import edu.urgu.oopteam.viewmodels.BotReponses.CurrResponse;
+import edu.urgu.oopteam.viewmodels.BotReponses.StringResponse;
+import edu.urgu.oopteam.viewmodels.BotReponses.TrackResponse;
+import edu.urgu.oopteam.viewmodels.BuySellExchangeRates;
+import edu.urgu.oopteam.viewmodels.ExchangeData;
+import org.checkerframework.checker.units.qual.A;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.junit.Test;
-import org.mockito.Mockito;
+import org.mockito.internal.matchers.apachecommons.ReflectionEquals;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.ArrayList;
 
-import static org.junit.Assert.*;
-import static org.mockito.BDDMockito.given;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
 
@@ -27,15 +37,8 @@ import static org.mockito.Mockito.*;
 @TestPropertySource(locations="classpath:test.properties")
 public class CurrencyBotTest {
     FileService fileService = new FileService();
-
-    @MockBean
-    ICurrencyTrackService currencyTrackService;
     @MockBean
     ITranslationService localizer;
-    @MockBean
-    IUserService userService;
-    @MockBean
-    ICurrencyCashExchangeService currencyCashExchangeService;
     @MockBean
     IMessenger messenger;
     @MockBean
@@ -45,45 +48,79 @@ public class CurrencyBotTest {
     CurrencyBot currencyBot;
 
     @Test
-    public void testSendTrackCommand() {
+    public void testExchangeCommand() {
         var user = new User(1, "ru");
-        var message = new Message(user.getChatId(), "/track USD -1");
-        var response = currencyBot.handleTrackCommand(message);
+        var message = new Message(user.getChatId(), "/exchange usd moskva");
+        var expectedResponse = new BuySellExchangeRates(
+                new ExchangeData("Агророс", 63.70),
+        new ExchangeData("Премьер БКС", 63.89)
+                );
 
-        assertEquals("New request added\n" +
-                        "CurrencyTrackRequest [id= 0, userId= 0, baseRate= 64.082, currencyCode= usd, delta= -1]",
-                response);
+        var response = (ExchangeResponse) currencyBot.handleExchangeCommand(message);
+
+
+        Assert.assertTrue(new ReflectionEquals(expectedResponse.getBuyData())
+                .matches(response.getBuySellExchangeRates().getBuyData()));
+        Assert.assertTrue(new ReflectionEquals(expectedResponse.getSellData())
+                .matches(response.getBuySellExchangeRates().getSellData()));
     }
 
 
+    @Test
+    public void testCurrCommand() {
+        var user = new User(1, "ru");
+        var message = new Message(user.getChatId(), "/curr usd");
+        var expectedResponse = new CurrResponse(64.0817);
+
+        var response = (CurrResponse) currencyBot.handleCurrCommand(message);
+
+        Assert.assertTrue(new ReflectionEquals(expectedResponse).matches(response));
+    }
+
+
+    @Test
+    public void testTrackCommand() {
+        var user = new User(1, "ru");
+        var message = new Message(user.getChatId(), "/track usd -10");
+        var expectedRequest = new CurrencyTrackRequest(64.0817, "usd", -10, user);
+
+        var response = (TrackResponse) currencyBot.handleTrackCommand(message);
+
+        assertEquals(response.currencyTrackRequest.getDelta(), expectedRequest.getDelta(), 0.001);
+        assertEquals(response.currencyTrackRequest.getCurrencyCode(), expectedRequest.getCurrencyCode());
+        assertEquals(response.currencyTrackRequest.getUser().getChatId(), expectedRequest.getUser().getChatId());
+    }
+
+    @Test
+    public void testUntrackCommand_NotFound() {
+        var user = new User(1, "ru");
+        var message = new Message(user.getChatId(), "/untrack usd");
+        var expectedRequest = new StringResponse("No such currency in the tracked list");
+
+        var response = (StringResponse) currencyBot.handleUntrackCommand(message);
+
+        assertEquals(expectedRequest.getMessage(), response.getMessage());
+    }
+
     @Before
     public void setUp() throws Exception {
-        //new FieldSetter(currencyBot, CurrencyBot.class.getDeclaredField("currModel")).set(new Curr);
-//        initMocks();
-
-
         // to load currency data from JSON instead of URL
         var jsonString = fileService.readResourceFileAsString("daily_json.json");
         var mapper = new ObjectMapper();
         currencyBot.currModel = mapper.readValue(jsonString, CurrenciesJsonModel.class);
 
-        when(this.webService.getPageAsString("https://www.cbr-xml-daily.ru/daily_json.js", "UTF-8"))
+        when(this.webService.getPageAsString("https://www.cbr-xml-daily.ru/daily_json.js","UTF-8"))
                 .thenReturn(jsonString);
+
+        var usdMoscowSample = fileService.readResourceFileAsString("usd_moscow.html");
+
+        when(this.webService.getPageAsString(
+                eq("https://banki.ru/products/currency/best_rates_summary/bank/usd/moskva/"),
+                eq("UTF-8"), any()))
+                .thenReturn(usdMoscowSample);
 
         when(this.localizer.localize(anyString(), anyString()))
                 .thenAnswer(i -> i.getArguments()[0]);
 
-        when(this.currencyTrackService.addTrackedCurrency(anyDouble(), anyString(), anyDouble(), any(User.class)))
-                .thenAnswer(i -> new CurrencyTrackRequest(
-                        (double) i.getArguments()[0],
-                        (String) i.getArguments()[1],
-                        (double) i.getArguments()[2],
-                        (User) i.getArguments()[3]));
-
-
-        // to disable notifyUsers()
-        when(currencyTrackService.findAll()).thenReturn(new ArrayList<>());
-
     }
-
 }
