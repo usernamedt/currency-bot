@@ -13,22 +13,6 @@ public class FileService {
      * @param fileName filename
      * @return file as a FileInputStream
      */
-    public FileInputStream readResourceFile(String fileName) throws IOException {
-        ClassLoader classLoader = getClass().getClassLoader();
-        URL resource = classLoader.getResource(fileName);
-        if (resource == null) {
-            throw new IllegalArgumentException("file is not found!");
-        } else {
-            return new FileInputStream(resource.getFile());
-        }
-    }
-
-    /**
-     * Read file from resource folder
-     *
-     * @param fileName filename
-     * @return file as a FileInputStream
-     */
     public String readResourceFileAsString(String fileName) throws IOException {
         ClassLoader classLoader = getClass().getClassLoader();
         URL resource = classLoader.getResource(fileName);

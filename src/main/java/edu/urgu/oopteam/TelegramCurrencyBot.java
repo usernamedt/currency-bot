@@ -15,12 +15,11 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiRequestException;
 @Component
 public class TelegramCurrencyBot extends TelegramLongPollingBot implements IMessenger {
     private final static Logger LOGGER = Logger.getLogger(TelegramCurrencyBot.class);
-    private ConfigurationSettings configSettings;
+    private final ConfigurationSettings configSettings;
     private TelegramUpdateHandler updateHandler;
 
     @Autowired
     public TelegramCurrencyBot(ConfigurationSettings settings) {
-        super();
         configSettings = settings;
     }
 

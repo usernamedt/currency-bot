@@ -26,7 +26,7 @@ public class CurrencyCashExchangeService implements ICurrencyCashExchangeService
     private static final int FETCH_RATE = 30;
     private static final Hashtable<Pair<String, String>, CompletableFuture<CashExchangeRate>> cachedExchangeRequests = new Hashtable<>();
     private final CashExchangeRateRepository cashExchangeRateRepository;
-    private WebService webService;
+    private final WebService webService;
 
 
     @Autowired

@@ -12,9 +12,7 @@ import java.util.stream.Collectors;
 @Service
 public class TranslationsService implements ITranslationService {
 
-    private static final Logger LOGGER = Logger.getLogger(TranslationsService.class);
-
-    private final String mainLanguageCode = "en";
+    private static final String mainLanguageCode = "en";
 
     private final List<String> supportedLangCodes = Arrays.asList(mainLanguageCode, "ru");
 
@@ -32,7 +30,7 @@ public class TranslationsService implements ITranslationService {
         var languageLocalization = translations.stream()
                 .filter(x -> x.getByLangCode(mainLanguageCode).equals(key))
                 .collect(Collectors.toList());
-        return languageLocalization.size() == 0 ? key : languageLocalization.get(0).getByLangCode(languageCode);
+        return languageLocalization.isEmpty() ? key : languageLocalization.get(0).getByLangCode(languageCode);
     }
 
     @Override

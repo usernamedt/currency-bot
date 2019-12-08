@@ -14,9 +14,9 @@ import java.util.concurrent.Executors;
 @Component
 public class CurrencyBotDecorator {
     private static final Logger LOGGER = Logger.getLogger(CurrencyBotDecorator.class);
-    private IMessenger messenger;
-    private ExecutorService pool = Executors.newFixedThreadPool(200);
-    private CurrencyBot currencyBot;
+    private final IMessenger messenger;
+    private final ExecutorService pool = Executors.newFixedThreadPool(200);
+    private final CurrencyBot currencyBot;
 
     @Autowired
     public CurrencyBotDecorator(IMessenger messenger, CurrencyBot currencyBot) {
@@ -36,7 +36,7 @@ public class CurrencyBotDecorator {
     /**
      * Notifies users which are tracking some currencies if delta is greater than requested
      */
-    void notifyTrackedUsers() {
+    private void notifyTrackedUsers() {
         currencyBot.getNotifyMessages().forEach(message ->
             messenger.sendMessage(message.getChatId(), message.getMessageBody()));
     }

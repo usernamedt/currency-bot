@@ -66,7 +66,7 @@ public class CurrencyBot {
     /**
      * Notifies users which are tracking some currencies if delta is greater than requested
      */
-    List<Message> getNotifyMessages() {
+    public List<Message> getNotifyMessages() {
         // Update current json model to fetch actual data
         tryUpdateJsonModel();
 
@@ -99,7 +99,7 @@ public class CurrencyBot {
      * @param message User's message
      * @return Reply to a user
      */
-    IBotResponse handleExchangeCommand(Message message) {
+    public IBotResponse handleExchangeCommand(Message message) {
         var user = userService.getExistingOrNewUser(message.getChatId());
         var messageArgs = message.getMessageBody().split(" ");
         if (messageArgs.length != 3) {
@@ -125,7 +125,7 @@ public class CurrencyBot {
      * @param message User's message
      * @return Reply to a user
      */
-    String handleLangCommand(Message message) {
+    public String handleLangCommand(Message message) {
         var user = userService.getExistingOrNewUser(message.getChatId());
         var messageArgs = message.getMessageBody().split(" ");
         if (messageArgs.length != 2) {
@@ -144,7 +144,7 @@ public class CurrencyBot {
      * @param message User's message
      * @return Reply to a user (exchange rate for a currency)
      */
-    IBotResponse handleCurrCommand(Message message) {
+    public IBotResponse handleCurrCommand(Message message) {
         var user = userService.getExistingOrNewUser(message.getChatId());
         var messageArgs = message.getMessageBody().split(" ");
         if (messageArgs.length != 2) {
@@ -166,7 +166,7 @@ public class CurrencyBot {
      * @param message User's message
      * @return Message for user that tells if everything processed right
      */
-    IBotResponse handleTrackCommand(Message message) {
+    public IBotResponse handleTrackCommand(Message message) {
         var user = userService.getExistingOrNewUser(message.getChatId());
         var messageArgs = message.getMessageBody().split(" ");
         if (messageArgs.length != 3) {
@@ -204,7 +204,7 @@ public class CurrencyBot {
      * @param message User's message
      * @return Message for user that tells if everything processed right
      */
-    IBotResponse handleUntrackCommand(Message message) {
+    public IBotResponse handleUntrackCommand(Message message) {
         var user = userService.getExistingOrNewUser(message.getChatId());
         var messageArgs = message.getMessageBody().split(" ");
         if (messageArgs.length != 2) {
@@ -236,7 +236,7 @@ public class CurrencyBot {
      * @param message User's message
      * @return Message for user that tells if everything processed right
      */
-    IBotResponse handleAllTrackedCommand(Message message) {
+    public IBotResponse handleAllTrackedCommand(Message message) {
         var user = userService.getExistingOrNewUser(message.getChatId());
         var userRequests = currencyTrackService.findAllByUserId(user.getId());
         if (userRequests.isEmpty()) {
@@ -252,7 +252,7 @@ public class CurrencyBot {
      *
      * @return Message for user that tells if everything processed right
      */
-    String handleHelpCommand(Message message) {
+    public String handleHelpCommand(Message message) {
         var user = userService.getExistingOrNewUser(message.getChatId());
         return localizer.localize(HELP_MESSAGE, user.getLanguageCode());
     }
@@ -262,7 +262,7 @@ public class CurrencyBot {
      *
      * @return Message for user that tells if everything processed right
      */
-    String getUnknownReqMessage(Message message) {
+    public String getUnknownReqMessage(Message message) {
         var user = userService.getExistingOrNewUser(message.getChatId());
         return localizer.localize(UNKNOWN_REQ_MESSAGE, user.getLanguageCode());
     }
