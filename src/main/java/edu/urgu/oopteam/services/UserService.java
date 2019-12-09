@@ -1,5 +1,6 @@
 package edu.urgu.oopteam.services;
 
+import edu.urgu.oopteam.Language;
 import edu.urgu.oopteam.crud.model.User;
 import edu.urgu.oopteam.crud.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,15 +29,15 @@ public class UserService implements IUserService {
 
     @Override
     public User createUser(long chatId) {
-        var user = new User(chatId, "en");
+        var user = new User(chatId, Language.ENGLISH);
         userRepository.save(user);
         return user;
     }
 
     @Override
-    public void setLanguage(long chatId, String languageCode) {
+    public void setLanguage(long chatId, Language language) {
         var user = userRepository.getFirstByChatId(chatId);
-        user.setLanguageCode(languageCode);
+        user.setLanguage(language);
         userRepository.save(user);
     }
 }

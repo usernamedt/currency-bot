@@ -1,5 +1,6 @@
 package edu.urgu.oopteam.services;
 
+import edu.urgu.oopteam.Language;
 import edu.urgu.oopteam.crud.model.CurrencyTrackRequest;
 import edu.urgu.oopteam.crud.model.User;
 import edu.urgu.oopteam.crud.repository.CurrencyTrackRequestRepository;
@@ -24,7 +25,7 @@ public class CurrencyTrackServiceTest {
 
     @Test
     public void testFindAllByChatId() {
-        var user = new User(1, "ru");
+        var user = new User(1, Language.RUSSIAN);
         when(currencyTrackRequestRepository.getAllByUserId((long) 0)).thenReturn(List.of(
                 new CurrencyTrackRequest(20.0, "USD", -1,user),
                 new CurrencyTrackRequest(10.0, "GBP", 15,user)
@@ -32,10 +33,4 @@ public class CurrencyTrackServiceTest {
 
         assertEquals(2, currencyTrackService.findAllByUserId((long) 0).size());
     }
-//
-//
-//    @Before
-//    public void setUp() throws Exception {
-//
-//    }
 }

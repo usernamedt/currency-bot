@@ -16,6 +16,7 @@ import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
@@ -24,7 +25,7 @@ public class CurrencyCashExchangeService implements ICurrencyCashExchangeService
     private static final Logger LOGGER = Logger.getLogger(CurrencyCashExchangeService.class);
     private static final String SERVICE_ADDRESS = "https://banki.ru/products/currency/best_rates_summary/bank/";
     private static final int FETCH_RATE = 30;
-    private static final Hashtable<Pair<String, String>, CompletableFuture<CashExchangeRate>> cachedExchangeRequests = new Hashtable<>();
+    private static final ConcurrentHashMap<Pair<String, String>, CompletableFuture<CashExchangeRate>> cachedExchangeRequests = new ConcurrentHashMap<>();
     private final CashExchangeRateRepository cashExchangeRateRepository;
     private final WebService webService;
 
@@ -52,27 +53,25 @@ public class CurrencyCashExchangeService implements ICurrencyCashExchangeService
     @Override
     public CashExchangeRate getCashExchangeRate(String currencyCode, String city) throws ExecutionException, InterruptedException {
         CompletableFuture<CashExchangeRate> fetchRequest;
-        synchronized (cachedExchangeRequests) {
-            var activeFetch = cachedExchangeRequests.get(Pair.of(currencyCode, city));
-            if (activeFetch != null && (!activeFetch.isDone() || isRateActual(activeFetch.get()))) {
-                fetchRequest = activeFetch;
-            } else {
-                fetchRequest = CompletableFuture.supplyAsync(() -> {
-                    try {
-                        var rate = cashExchangeRateRepository.getByCurrencyCodeAndCity(currencyCode, city);
-                        // if exists and up-to-date, return it
-                        return rate == null
-                                ? createCashExchangeRate(currencyCode, city)
-                                : isRateActual(rate) ? rate : updateCashExchangeRate(rate);
-                    } catch (IOException e)
-                    {
-                        LOGGER.error(e);
-                        return null;
-                    }
-                });
-                cachedExchangeRequests.put(Pair.of(currencyCode, city), fetchRequest);
-            }
+        var activeFetch = cachedExchangeRequests.get(Pair.of(currencyCode, city));
+        if (activeFetch != null && (!activeFetch.isDone() || isRateActual(activeFetch.get()))) {
+            fetchRequest = activeFetch;
+        } else {
+            fetchRequest = CompletableFuture.supplyAsync(() -> {
+                try {
+                    var rate = cashExchangeRateRepository.getByCurrencyCodeAndCity(currencyCode, city);
+                    // if exists and up-to-date, return it
+                    return rate == null
+                            ? createCashExchangeRate(currencyCode, city)
+                            : isRateActual(rate) ? rate : updateCashExchangeRate(rate);
+                } catch (IOException e) {
+                    LOGGER.error(e);
+                    return null;
+                }
+            });
+            cachedExchangeRequests.put(Pair.of(currencyCode, city), fetchRequest);
         }
+
         return fetchRequest.get();
     }
 

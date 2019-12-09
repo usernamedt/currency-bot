@@ -1,5 +1,7 @@
 package edu.urgu.oopteam.crud.model;
 
+import edu.urgu.oopteam.Language;
+
 import javax.persistence.*;
 import java.text.MessageFormat;
 
@@ -11,8 +13,8 @@ public class User {
     private long id;
     @Column(name = "chat_id", nullable = false)
     private long chatId;
-    @Column(name = "language_code", nullable = false)
-    private String languageCode;
+    @Column(name = "language", nullable = false)
+    private Language language;
 
     /**
      * Needed for Spring to map entities from database !!!!!!!!!!!!!!!!!!!!!!DONOTDELETE
@@ -23,19 +25,19 @@ public class User {
 
     /**
      * @param chatId       User's chat ID
-     * @param languageCode Code of the language used by the user
+     * @param language Code of the language used by the user
      */
-    public User(long chatId, String languageCode) {
+    public User(long chatId, Language language) {
         this.chatId = chatId;
-        this.languageCode = languageCode;
+        this.language = language;
     }
 
-    public String getLanguageCode() {
-        return languageCode;
+    public Language getLanguage() {
+        return language;
     }
 
-    public void setLanguageCode(String languageCode) {
-        this.languageCode = languageCode;
+    public void setLanguage(Language language) {
+        this.language = language;
     }
 
     public long getChatId() {
@@ -50,7 +52,7 @@ public class User {
 
     @Override
     public String toString() {
-        return MessageFormat.format("[id= {0}, chatId= {1}, languageCode= {2}]", id, chatId, languageCode);
+        return MessageFormat.format("[id= {0}, chatId= {1}, languageCode= {2}]", id, chatId, language);
     }
 
 }

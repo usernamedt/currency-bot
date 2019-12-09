@@ -63,14 +63,14 @@ public class CurrencyBotTest {
                 eq("UTF-8"), any()))
                 .thenReturn(usdMoscowSample);
 
-        when(this.localizer.localize(anyString(), anyString()))
+        when(this.localizer.localize(anyString(), any(Language.class)))
                 .thenAnswer(i -> i.getArguments()[0]);
 
     }
 
     @Test
     public void testExchangeCommand() {
-        var user = new User(1, "ru");
+        var user = new User(1, Language.RUSSIAN);
         var message = new Message(user.getChatId(), "/exchange usd moskva");
         var expectedResponse = new BuySellExchangeRates(
                 new ExchangeData("Агророс", 63.70),
@@ -89,7 +89,7 @@ public class CurrencyBotTest {
 
     @Test
     public void testCurrCommand() {
-        var user = new User(1, "ru");
+        var user = new User(1, Language.RUSSIAN);
         var message = new Message(user.getChatId(), "/curr usd");
         var expectedResponse = new CurrResponse(64.0817);
 
@@ -101,7 +101,7 @@ public class CurrencyBotTest {
 
     @Test
     public void testTrackCommand() {
-        var user = new User(1, "ru");
+        var user = new User(1, Language.RUSSIAN);
         var message = new Message(user.getChatId(), "/track usd -10");
         var expectedRequest = new CurrencyTrackRequest(64.0817, "usd", -10, user);
 
@@ -114,7 +114,7 @@ public class CurrencyBotTest {
 
     @Test
     public void testUntrackCommand_NotFound() {
-        var user = new User(1, "ru");
+        var user = new User(1, Language.RUSSIAN);
         var message = new Message(user.getChatId(), "/untrack usd");
         var expectedRequest = new StringResponse("No such currency in the tracked list");
 
@@ -126,7 +126,7 @@ public class CurrencyBotTest {
 
     @Test
     public void testUntrackCommand_Exists() {
-        var user = new User(1, "ru");
+        var user = new User(1, Language.RUSSIAN);
         var message = new Message(user.getChatId(), "/untrack usd");
         var expectedRequest = new CurrencyTrackRequest(64.0817, "usd", -10, user);
 
@@ -143,7 +143,7 @@ public class CurrencyBotTest {
 
     @Test
     public void testShowingAllTrackedCommand() {
-        var user = new User(1, "ru");
+        var user = new User(1, Language.RUSSIAN);
         var message = new Message(user.getChatId(), "/allTracked");
         currencyBot.handleTrackCommand(new Message(user.getChatId(),  "/track usd 3"));
         currencyBot.handleTrackCommand(new Message(user.getChatId(),  "/track eur 5"));

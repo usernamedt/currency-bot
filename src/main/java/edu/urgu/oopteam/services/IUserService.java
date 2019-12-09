@@ -1,5 +1,6 @@
 package edu.urgu.oopteam.services;
 
+import edu.urgu.oopteam.Language;
 import edu.urgu.oopteam.crud.model.User;
 
 import java.util.List;
@@ -21,9 +22,9 @@ public interface IUserService {
      * Sets new language for a user
      *
      * @param chatId       User's chat ID
-     * @param languageCode Code of the language
+     * @param language     Code of the language
      */
-    void setLanguage(long chatId, String languageCode);
+    void setLanguage(long chatId, Language language);
 
     /**
      * Load existing user or create new and return it

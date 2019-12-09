@@ -1,5 +1,7 @@
 package edu.urgu.oopteam.crud.model;
 
+import edu.urgu.oopteam.Language;
+
 import javax.persistence.*;
 import java.text.MessageFormat;
 
@@ -18,21 +20,14 @@ public class Translation {
 
     }
 
-    public Translation(String en, String ru) {
-        this.en = en;
-        this.ru = ru;
-    }
-
-    public String getByLangCode(String code) {
-        if (code.equals("ru"))
+    public String getByLanguage(Language language) {
+        if (language == Language.RUSSIAN)
             return ru;
         return en;
     }
 
     @Override
     public String toString() {
-        return MessageFormat.format("CurrencyTrackRequest " +
-                        "[id= {0}, en= {1}, ru= {2}]",
-                id, en, ru);
+        return MessageFormat.format("[id= {0}, en= {1}, ru= {2}]", id, en, ru);
     }
 }
