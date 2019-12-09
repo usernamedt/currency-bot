@@ -8,6 +8,7 @@ import edu.urgu.oopteam.viewmodels.BotReponses.*;
 import javassist.NotFoundException;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Component;
 
 import java.sql.SQLException;
@@ -15,6 +16,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 @Component
+@EnableScheduling
 public class CurrencyBot {
     private final static String HELP_MESSAGE = "Hello, it's Currency Bot!" +
             "\r\nI can show you some exchange rates. Use commands below:" +
@@ -49,15 +51,6 @@ public class CurrencyBot {
                        ) {
         this.currencyTrackService = currencyTrackService;
         this.userService = userService;
-        var jsonUpdateTimer = new Timer();
-        var jsonUpdateTask = new TimerTask() {
-            @Override
-            public void run() {
-                tryUpdateJsonModel();
-            }
-        };
-        jsonUpdateTimer.scheduleAtFixedRate(jsonUpdateTask, new Date(), 1000 * 60 * 60);
-
         this.localizer = localizer;
         this.currencyCashExchangeService = currencyCashExchangeService;
         this.webService = webService;
@@ -68,7 +61,9 @@ public class CurrencyBot {
      */
     public List<Message> getNotifyMessages() {
         // Update current json model to fetch actual data
-        tryUpdateJsonModel();
+        if (!tryUpdateJsonModel()) {
+            return new ArrayList<>();
+        }
 
         var result = new ArrayList<Message>();
         var requests = currencyTrackService.findAll();

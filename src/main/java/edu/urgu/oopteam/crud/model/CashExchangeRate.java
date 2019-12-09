@@ -4,10 +4,32 @@ import edu.urgu.oopteam.viewmodels.BuySellExchangeRates;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.Objects;
 
 @Entity
 @Table(name = "cashexchangerates")
 public class CashExchangeRate {
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CashExchangeRate that = (CashExchangeRate) o;
+        return id == that.id &&
+                Double.compare(that.buyRate, buyRate) == 0 &&
+                Double.compare(that.sellRate, sellRate) == 0 &&
+                Objects.equals(currencyCode, that.currencyCode) &&
+                Objects.equals(city, that.city) &&
+                Objects.equals(buyBankName, that.buyBankName) &&
+                Objects.equals(sellBankName, that.sellBankName) &&
+                Objects.equals(fetchTime, that.fetchTime);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, currencyCode, city, buyBankName, sellBankName, buyRate, sellRate, fetchTime);
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;

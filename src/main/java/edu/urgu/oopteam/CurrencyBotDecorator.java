@@ -22,6 +22,7 @@ public class CurrencyBotDecorator {
     public CurrencyBotDecorator(IMessenger messenger, CurrencyBot currencyBot) {
         this.messenger = messenger;
         messenger.setUpdateHandler(this::processMessageAsync);
+        this.currencyBot = currencyBot;
         var jsonUpdateTimer = new Timer();
         var jsonUpdateTask = new TimerTask() {
             @Override
@@ -30,7 +31,6 @@ public class CurrencyBotDecorator {
             }
         };
         jsonUpdateTimer.scheduleAtFixedRate(jsonUpdateTask, new Date(), 1000 * 60 * 60);
-        this.currencyBot = currencyBot;
     }
 
     /**

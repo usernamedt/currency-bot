@@ -5,6 +5,7 @@ import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
 import java.text.MessageFormat;
+import java.util.Objects;
 
 @Entity
 @Table(name = "currencytrackrequests")
@@ -93,4 +94,20 @@ public class CurrencyTrackRequest {
                 id, user.getId(), baseRate, currencyCode, delta);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CurrencyTrackRequest that = (CurrencyTrackRequest) o;
+        return id == that.id &&
+                Double.compare(that.baseRate, baseRate) == 0 &&
+                Double.compare(that.delta, delta) == 0 &&
+                Objects.equals(currencyCode, that.currencyCode) &&
+                Objects.equals(user, that.user);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, baseRate, currencyCode, delta, user);
+    }
 }

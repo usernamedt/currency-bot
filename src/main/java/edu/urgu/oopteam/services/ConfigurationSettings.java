@@ -13,12 +13,6 @@ public class ConfigurationSettings {
     private String botToken;
     @Value("${bot.data.directory}")
     private String botDataDir;
-//    @Value("${spring.datasource.url}")
-//    private String springDatasourceUrl;
-//    @Value("${spring.datasource.username}")
-//    private String springDatasourceUsername;
-//    @Value("${spring.datasource.password}")
-//    private String springDatasourcePassword;
 
     public ConfigurationSettings() {
     }
