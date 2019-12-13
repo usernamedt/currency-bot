@@ -153,6 +153,5 @@
             <version>2.2.0.RELEASE</version>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
 </project>

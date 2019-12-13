@@ -18,4 +18,7 @@ public interface CurrencyTrackRequestRepository extends JpaRepository<CurrencyTr
     List<CurrencyTrackRequest> findByUserIdAndCurrencyCode(long userId, String currencyCode);
 
     List<CurrencyTrackRequest> getAllByUserId(final Long chatId);
+
+    @Override
+    void deleteAll();
 }

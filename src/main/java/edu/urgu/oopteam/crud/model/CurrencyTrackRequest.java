@@ -24,9 +24,8 @@ public class CurrencyTrackRequest {
     @Column(name = "delta", nullable = false)
     private double delta;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
-    @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;
 
     /**

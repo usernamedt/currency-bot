@@ -3,6 +3,9 @@ package edu.urgu.oopteam;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.urgu.oopteam.crud.model.CurrencyTrackRequest;
 import edu.urgu.oopteam.crud.model.User;
+import edu.urgu.oopteam.crud.repository.CashExchangeRateRepository;
+import edu.urgu.oopteam.crud.repository.CurrencyTrackRequestRepository;
+import edu.urgu.oopteam.crud.repository.UserRepository;
 import edu.urgu.oopteam.models.CurrenciesJsonModel;
 import edu.urgu.oopteam.services.*;
 import edu.urgu.oopteam.viewmodels.BotReponses.*;
@@ -19,6 +22,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +36,6 @@ import static org.mockito.Mockito.*;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @TestPropertySource(locations="classpath:test.properties")
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class CurrencyBotTest {
     @MockBean
     private ITranslationService localizer;
@@ -46,7 +49,15 @@ public class CurrencyBotTest {
     @Autowired
     private CurrencyBot currencyBot;
 
+    @Autowired
+    private CashExchangeRateRepository cashExchangeRateRepository;
+    @Autowired
+    private CurrencyTrackRequestRepository currencyTrackRequestRepository;
+    @Autowired
+    private UserRepository userRepository;
+
     @Before
+    @Transactional
     public void setUp() throws Exception {
         // to load currency data from JSON instead of URL
         var jsonString = fileService.readResourceFileAsString("daily_json.json");
@@ -66,6 +77,9 @@ public class CurrencyBotTest {
         when(this.localizer.localize(anyString(), any(Language.class)))
                 .thenAnswer(i -> i.getArguments()[0]);
 
+        cashExchangeRateRepository.deleteAll();
+//        currencyTrackRequestRepository.deleteAll();
+        userRepository.deleteAll();
     }
 
     @Test
@@ -100,6 +114,7 @@ public class CurrencyBotTest {
 
 
     @Test
+    @Transactional
     public void testTrackCommand() {
         var user = new User(1, Language.RUSSIAN);
         var message = new Message(user.getChatId(), "/track usd -10");
@@ -110,7 +125,7 @@ public class CurrencyBotTest {
         assertEquals(response.currencyTrackRequest.getDelta(), expectedRequest.getDelta(), 0.001);
         assertEquals(response.currencyTrackRequest.getCurrencyCode(), expectedRequest.getCurrencyCode());
         // С этой строчкой иногда работает, иногда нет wtf
-//        assertEquals(response.currencyTrackRequest.getUser().getChatId(), expectedRequest.getUser().getChatId());
+        assertEquals(response.currencyTrackRequest.getUser().getChatId(), expectedRequest.getUser().getChatId());
     }
 
     @Test
@@ -126,6 +141,7 @@ public class CurrencyBotTest {
 
 
     @Test
+    @Transactional
     public void testUntrackCommand_Exists() {
         var user = new User(1, Language.RUSSIAN);
         var message = new Message(user.getChatId(), "/untrack usd");
@@ -140,10 +156,11 @@ public class CurrencyBotTest {
 
         assertEquals(response.currencyTrackRequest.getDelta(), expectedRequest.getDelta(), 0.001);
         assertEquals(response.currencyTrackRequest.getCurrencyCode(), expectedRequest.getCurrencyCode());
+        assertEquals(response.currencyTrackRequest.getUser().getChatId(), expectedRequest.getUser().getChatId());
     }
 
     @Test
-    public void testShowingAllTrackedCommand() {
+    public void testAllTrackedCommand() {
         var user = new User(1, Language.RUSSIAN);
         var message = new Message(user.getChatId(), "/allTracked");
         currencyBot.handleTrackCommand(new Message(user.getChatId(),  "/track usd 3"));
