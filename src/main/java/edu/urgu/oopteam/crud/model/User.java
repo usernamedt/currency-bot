@@ -33,8 +33,6 @@ public class User {
     private long chatId;
     @Column(name = "language", nullable = false)
     private Language language;
-    @OneToMany(cascade = CascadeType.REMOVE, mappedBy = "user")
-    private List<CurrencyTrackRequest> requests = new ArrayList<>();
 
     /**
      * Needed for Spring to map entities from database !!!!!!!!!!!!!!!!!!!!!!DONOTDELETE

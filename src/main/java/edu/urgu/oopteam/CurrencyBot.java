@@ -39,14 +39,14 @@ public class CurrencyBot {
     private ICurrencyTrackService currencyTrackService;
     private IUserService userService;
     private ITranslationService localizer;
-    private ICurrencyCashExchangeService currencyCashExchangeService;
+    private ICashExchangeService currencyCashExchangeService;
     private WebService webService;
 
     @Autowired
     public CurrencyBot(ICurrencyTrackService currencyTrackService,
                        IUserService userService,
                        ITranslationService localizer,
-                       ICurrencyCashExchangeService currencyCashExchangeService,
+                       ICashExchangeService currencyCashExchangeService,
                        WebService webService
                        ) {
         this.currencyTrackService = currencyTrackService;

@@ -11,23 +11,18 @@ import edu.urgu.oopteam.services.*;
 import edu.urgu.oopteam.viewmodels.BotReponses.*;
 import edu.urgu.oopteam.viewmodels.BuySellExchangeRates;
 import edu.urgu.oopteam.viewmodels.ExchangeData;
-import org.junit.Assert;
-import org.junit.Before;
+import org.junit.*;
 import org.junit.runner.RunWith;
-import org.junit.Test;
 import org.mockito.internal.matchers.apachecommons.ReflectionEquals;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import static junit.framework.TestCase.assertTrue;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
@@ -57,7 +52,6 @@ public class CurrencyBotTest {
     private UserRepository userRepository;
 
     @Before
-    @Transactional
     public void setUp() throws Exception {
         // to load currency data from JSON instead of URL
         var jsonString = fileService.readResourceFileAsString("daily_json.json");
@@ -77,9 +71,7 @@ public class CurrencyBotTest {
         when(this.localizer.localize(anyString(), any(Language.class)))
                 .thenAnswer(i -> i.getArguments()[0]);
 
-        cashExchangeRateRepository.deleteAll();
-//        currencyTrackRequestRepository.deleteAll();
-        userRepository.deleteAll();
+        cleanDatabase();
     }
 
     @Test
@@ -114,7 +106,6 @@ public class CurrencyBotTest {
 
 
     @Test
-    @Transactional
     public void testTrackCommand() {
         var user = new User(1, Language.RUSSIAN);
         var message = new Message(user.getChatId(), "/track usd -10");
@@ -141,7 +132,6 @@ public class CurrencyBotTest {
 
 
     @Test
-    @Transactional
     public void testUntrackCommand_Exists() {
         var user = new User(1, Language.RUSSIAN);
         var message = new Message(user.getChatId(), "/untrack usd");
@@ -161,6 +151,7 @@ public class CurrencyBotTest {
 
     @Test
     public void testAllTrackedCommand() {
+        cleanDatabase();
         var user = new User(1, Language.RUSSIAN);
         var message = new Message(user.getChatId(), "/allTracked");
         currencyBot.handleTrackCommand(new Message(user.getChatId(),  "/track usd 3"));
@@ -175,5 +166,22 @@ public class CurrencyBotTest {
 
         assertThat(expectedRequests).usingElementComparatorIgnoringFields("id", "user").containsAll(actualResponse.requests);
         assertThat(actualResponse.requests).usingElementComparatorIgnoringFields("id", "user").containsAll(expectedRequests);
+    }
+
+    @After
+    public void cleanUp() {
+        cleanDatabase();
+    }
+
+    @Transactional
+    public void cleanDatabase() {
+        userRepository.deleteAll();
+        userRepository.flush();
+
+        cashExchangeRateRepository.deleteAll();
+        cashExchangeRateRepository.flush();
+
+        currencyTrackRequestRepository.deleteAll();
+        currencyTrackRequestRepository.flush();
     }
 }
