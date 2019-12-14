@@ -29,4 +29,9 @@ public class ExchangeData {
     public void setBankName(String bankName) {
         this.bankName = bankName;
     }
+
+    @Override
+    public String toString() {
+        return MessageFormat.format("ExchangeData[bankName={0}, rate={1}]", bankName, rate);
+    }
 }

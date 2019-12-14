@@ -87,7 +87,6 @@ public class CurrencyBotTest {
 
         var response = (ExchangeResponse) currencyBot.handleExchangeCommand(message);
 
-
         Assert.assertTrue(new ReflectionEquals(expectedResponse.getBuyData())
                 .matches(response.getBuySellExchangeRates().getBuyData()));
         Assert.assertTrue(new ReflectionEquals(expectedResponse.getSellData())

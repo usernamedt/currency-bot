@@ -2,6 +2,8 @@ package edu.urgu.oopteam.viewmodels;
 
 import edu.urgu.oopteam.crud.model.CashExchangeRate;
 
+import java.text.MessageFormat;
+
 /**
  * Holds currency buy/sell information (rate and bank name)
  */
@@ -21,5 +23,10 @@ public class BuySellExchangeRates {
 
     public ExchangeData getSellData() {
         return sellData;
+    }
+
+    @Override
+    public String toString() {
+        return MessageFormat.format("BuySellExchangeRates[buyData={0}, sellData={1}]", buyData, sellData);
     }
 }
