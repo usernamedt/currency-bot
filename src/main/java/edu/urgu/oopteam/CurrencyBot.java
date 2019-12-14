@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -70,8 +71,8 @@ public class CurrencyBot {
         requests.forEach(request -> {
             try {
                 var currentRate = currModel.getExchangeRate(request.getCurrencyCode());
-                var currentDelta = currentRate - request.getBaseRate();
-                if (request.getDelta() * (currentDelta - request.getDelta()) >= 0) {
+                var currentDelta = currentRate.subtract(request.getBaseRate());
+                if ((request.getDelta().multiply(currentDelta.subtract(request.getDelta()))).compareTo(BigDecimal.ZERO) >= 0) {
                     CompletableFuture.runAsync(() -> {
                         var localizedMessage = localizer.localize(
                                 "Rate of your tracked currency has changed",
@@ -146,7 +147,7 @@ public class CurrencyBot {
             return new StringResponse(localizer.localize(UNKNOWN_REQ_MESSAGE, user.getLanguage()));
         }
         try {
-            double exRate = currModel.getExchangeRate(messageArgs[1]);
+            var exRate = currModel.getExchangeRate(messageArgs[1]);
             return new CurrResponse(exRate);
         } catch (NotFoundException e) {
             return new StringResponse(
@@ -169,8 +170,8 @@ public class CurrencyBot {
                     user.getLanguage()));
         }
         var currencyCode = messageArgs[1].toLowerCase();
-        var delta = Double.parseDouble(messageArgs[2]);
-        double currExchangeRate;
+        var delta = new BigDecimal(messageArgs[2]);
+        BigDecimal currExchangeRate;
         try {
             currExchangeRate = currModel.getExchangeRate(currencyCode);
         } catch (NotFoundException e) {

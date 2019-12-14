@@ -10,6 +10,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -27,8 +28,8 @@ public class CurrencyTrackServiceTest {
     public void testFindAllByChatId() {
         var user = new User(1, Language.RUSSIAN);
         when(currencyTrackRequestRepository.getAllByUserId((long) 0)).thenReturn(List.of(
-                new CurrencyTrackRequest(20.0, "USD", -1,user),
-                new CurrencyTrackRequest(10.0, "GBP", 15,user)
+                new CurrencyTrackRequest(new BigDecimal(20.0), "USD", new BigDecimal(-1),user),
+                new CurrencyTrackRequest(new BigDecimal(10.0), "GBP", new BigDecimal(15),user)
         ));
 
         assertEquals(2, currencyTrackService.findAllByUserId((long) 0).size());

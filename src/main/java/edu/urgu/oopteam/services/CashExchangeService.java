@@ -12,6 +12,7 @@ import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -139,7 +140,7 @@ public class CashExchangeService implements ICashExchangeService {
      * @return ExchangeData - parsed exchange data
      */
     private ExchangeData extractExchangeData(Element element) {
-        var rate = Double.parseDouble(element
+        var rate = new BigDecimal(element
                 .select("div.currency-table__large-text")
                 .first()
                 .html()

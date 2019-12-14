@@ -100,7 +100,7 @@
             "CharCode": "USD",
             "Nominal": 1,
             "Name": "Доллар США",
-            "Value": 64.0817,
+            "Value": 64.082,
             "Previous": 64.1005
         },
         "EUR": {
@@ -109,7 +109,7 @@
             "CharCode": "EUR",
             "Nominal": 1,
             "Name": "Евро",
-            "Value": 70.5475,
+            "Value": 70.548,
             "Previous": 70.5747
         },
         "INR": {

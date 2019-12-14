@@ -4,6 +4,7 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.Objects;
 
@@ -16,13 +17,13 @@ public class CurrencyTrackRequest {
     private long id;
     // exchange rate for currency on the time of
     @Column(name = "base_rate", nullable = false)
-    private double baseRate;
+    private BigDecimal baseRate;
     // currency name
     @Column(name = "currency_name", nullable = false)
     private String currencyCode;
     // delta
     @Column(name = "delta", nullable = false)
-    private double delta;
+    private BigDecimal delta;
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
@@ -36,7 +37,7 @@ public class CurrencyTrackRequest {
 
     }
 
-    public CurrencyTrackRequest(double baseRate, String currencyCode, double delta, User user) {
+    public CurrencyTrackRequest(BigDecimal baseRate, String currencyCode, BigDecimal delta, User user) {
         this.baseRate = baseRate;
         this.currencyCode = currencyCode;
         this.delta = delta;
@@ -52,11 +53,11 @@ public class CurrencyTrackRequest {
         this.id = id;
     }
 
-    public double getBaseRate() {
+    public BigDecimal getBaseRate() {
         return baseRate;
     }
 
-    public void setBaseRate(double baseRate) {
+    public void setBaseRate(BigDecimal baseRate) {
         this.baseRate = baseRate;
     }
 
@@ -70,11 +71,11 @@ public class CurrencyTrackRequest {
     }
 
 
-    public double getDelta() {
+    public BigDecimal getDelta() {
         return delta;
     }
 
-    public void setDelta(double delta) {
+    public void setDelta(BigDecimal delta) {
         this.delta = delta;
     }
 
@@ -100,10 +101,10 @@ public class CurrencyTrackRequest {
         if (o == null || getClass() != o.getClass()) return false;
         CurrencyTrackRequest that = (CurrencyTrackRequest) o;
         return id == that.id &&
-                Double.compare(that.baseRate, baseRate) == 0 &&
-                Double.compare(that.delta, delta) == 0 &&
-                Objects.equals(currencyCode, that.currencyCode) &&
-                Objects.equals(user, that.user);
+                baseRate.equals(that.baseRate) &&
+                currencyCode.equals(that.currencyCode) &&
+                delta.equals(that.delta) &&
+                user.equals(that.user);
     }
 
     @Override

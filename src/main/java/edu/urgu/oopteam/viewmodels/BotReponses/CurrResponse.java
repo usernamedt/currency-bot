@@ -1,11 +1,13 @@
 package edu.urgu.oopteam.viewmodels.BotReponses;
 
+import java.math.BigDecimal;
+
 public class CurrResponse implements IBotResponse {
-    public final double exchangeRate;
+    public final BigDecimal exchangeRate;
     // currently bot supports only RUB
     public final String currencyCode = "RUB";
 
-    public CurrResponse(double exchangeRate){
+    public CurrResponse(BigDecimal exchangeRate){
         this.exchangeRate = exchangeRate;
     }
 

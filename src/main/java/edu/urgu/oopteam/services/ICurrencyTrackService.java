@@ -3,6 +3,7 @@ package edu.urgu.oopteam.services;
 import edu.urgu.oopteam.crud.model.CurrencyTrackRequest;
 import edu.urgu.oopteam.crud.model.User;
 
+import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -18,7 +19,7 @@ public interface ICurrencyTrackService {
      * @param user         User object
      * @return Request that was just added
      */
-    CurrencyTrackRequest addTrackedCurrency(double baseRate, String currencyCode, double delta, User user);
+    CurrencyTrackRequest addTrackedCurrency(BigDecimal baseRate, String currencyCode, BigDecimal delta, User user);
 
     /**
      * Updates existing tracking request
@@ -27,7 +28,7 @@ public interface ICurrencyTrackService {
      * @param delta            New minimal difference between exchange rates that we need to notify about
      * @param currExchangeRate New exchange rate on the moment of request
      */
-    void updateTrackedCurrency(CurrencyTrackRequest request, double delta, double currExchangeRate);
+    void updateTrackedCurrency(CurrencyTrackRequest request, BigDecimal delta, BigDecimal currExchangeRate);
 
     List<CurrencyTrackRequest> findAllByUserId(long chatId);
 

@@ -6,6 +6,7 @@ import edu.urgu.oopteam.crud.repository.CurrencyTrackRequestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -42,14 +43,14 @@ public class CurrencyTrackService implements ICurrencyTrackService {
     }
 
     @Override
-    public CurrencyTrackRequest addTrackedCurrency(double baseRate, String currencyCode, double delta, User user) {
+    public CurrencyTrackRequest addTrackedCurrency(BigDecimal baseRate, String currencyCode, BigDecimal delta, User user) {
         var trackRequest = new CurrencyTrackRequest(baseRate, currencyCode, delta, user);
         currencyTrackRequestRepository.save(trackRequest);
         return trackRequest;
     }
 
     @Override
-    public void updateTrackedCurrency(CurrencyTrackRequest request, double delta, double currExchangeRate) {
+    public void updateTrackedCurrency(CurrencyTrackRequest request, BigDecimal delta, BigDecimal currExchangeRate) {
         request.setDelta(delta);
         request.setBaseRate(currExchangeRate);
         currencyTrackRequestRepository.save(request);

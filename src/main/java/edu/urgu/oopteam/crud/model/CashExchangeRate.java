@@ -3,6 +3,7 @@ package edu.urgu.oopteam.crud.model;
 import edu.urgu.oopteam.viewmodels.BuySellExchangeRates;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Objects;
 
@@ -10,25 +11,6 @@ import java.util.Objects;
 @Table(name = "cashexchangerates")
 public class CashExchangeRate {
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        CashExchangeRate that = (CashExchangeRate) o;
-        return id == that.id &&
-                Double.compare(that.buyRate, buyRate) == 0 &&
-                Double.compare(that.sellRate, sellRate) == 0 &&
-                Objects.equals(currencyCode, that.currencyCode) &&
-                Objects.equals(city, that.city) &&
-                Objects.equals(buyBankName, that.buyBankName) &&
-                Objects.equals(sellBankName, that.sellBankName) &&
-                Objects.equals(fetchTime, that.fetchTime);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, currencyCode, city, buyBankName, sellBankName, buyRate, sellRate, fetchTime);
-    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -47,10 +29,10 @@ public class CashExchangeRate {
     private String sellBankName;
 
     @Column(name = "buy_rate", nullable = false)
-    private double buyRate;
+    private BigDecimal buyRate;
 
     @Column(name = "sell_rate", nullable = false)
-    private double sellRate;
+    private BigDecimal sellRate;
 
     @Column(name = "fetch_time", nullable = false)
     @Temporal(TemporalType.DATE)
@@ -61,8 +43,8 @@ public class CashExchangeRate {
 
     }
 
-    public CashExchangeRate(String currencyCode, String city, double buyRate, String buyBankName,
-                            double sellRate, String sellBankName, Date fetchTime) {
+    public CashExchangeRate(String currencyCode, String city, BigDecimal buyRate, String buyBankName,
+                            BigDecimal sellRate, String sellBankName, Date fetchTime) {
         this.currencyCode = currencyCode;
         this.city = city;
         this.buyRate = buyRate;
@@ -88,19 +70,19 @@ public class CashExchangeRate {
         this.city = city;
     }
 
-    public double getBuyRate() {
+    public BigDecimal getBuyRate() {
         return buyRate;
     }
 
-    public void setBuyRate(double buyRate) {
+    public void setBuyRate(BigDecimal buyRate) {
         this.buyRate = buyRate;
     }
 
-    public double getSellRate() {
+    public BigDecimal getSellRate() {
         return sellRate;
     }
 
-    public void setSellRate(double sellRate) {
+    public void setSellRate(BigDecimal sellRate) {
         this.sellRate = sellRate;
     }
 
@@ -126,5 +108,25 @@ public class CashExchangeRate {
 
     public void setSellBankName(String sellBankName) {
         this.sellBankName = sellBankName;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CashExchangeRate that = (CashExchangeRate) o;
+        return id == that.id &&
+                currencyCode.equals(that.currencyCode) &&
+                city.equals(that.city) &&
+                buyBankName.equals(that.buyBankName) &&
+                sellBankName.equals(that.sellBankName) &&
+                buyRate.equals(that.buyRate) &&
+                sellRate.equals(that.sellRate) &&
+                fetchTime.equals(that.fetchTime);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, currencyCode, city, buyBankName, sellBankName, buyRate, sellRate, fetchTime);
     }
 }
