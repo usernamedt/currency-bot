@@ -1,6 +1,7 @@
 package edu.urgu.oopteam.viewmodels;
 
 import java.math.BigDecimal;
+import java.text.MessageFormat;
 
 /**
  * Holds currency exchange rate and associated bank name

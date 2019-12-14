@@ -169,7 +169,7 @@ public class CurrencyBotTest {
         var actualResponse = (AllTrackedResponse) currencyBot.handleAllTrackedCommand(message);
 
         assertThat(expectedRequests).usingElementComparatorIgnoringFields("id", "user")
-                .usingComparatorForType(new BigDecimalAssertComparator(), BigDecimal.class)
+                .usingComparatorForType(new BigDecimalComparator(), BigDecimal.class)
                 .containsAll(actualResponse.requests);
     }
 

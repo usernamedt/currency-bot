@@ -12,6 +12,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -143,18 +144,26 @@ public class CurrencyBot {
     public IBotResponse handleCurrCommand(Message message) {
         var user = userService.getExistingOrNewUser(message.getChatId());
         var messageArgs = message.getMessageBody().split(" ");
-        if (messageArgs.length != 2) {
-            return new StringResponse(localizer.localize(UNKNOWN_REQ_MESSAGE, user.getLanguage()));
+
+        if (messageArgs.length == 2 || messageArgs.length == 3) {
+            var firstCurrCode = messageArgs[1];
+            var secondCurrCode = messageArgs.length == 3 ? messageArgs[2] : "rub";
+
+            try {
+                var firstRate = currModel.getExchangeRate(firstCurrCode);
+                var secondRate = currModel.getExchangeRate(secondCurrCode);
+
+                return new CurrResponse(firstRate.divide(secondRate, 5, RoundingMode.DOWN),
+                        secondCurrCode.toUpperCase());
+            } catch (NotFoundException e) {
+                return new StringResponse(
+                        localizer.localize("I don't know this currency, please check supporting currencies",
+                                user.getLanguage()));
+            }
         }
-        try {
-            var exRate = currModel.getExchangeRate(messageArgs[1]);
-            return new CurrResponse(exRate);
-        } catch (NotFoundException e) {
-            return new StringResponse(
-                    localizer.localize("I don't know this currency, please check supporting currencies",
-                    user.getLanguage()));
-        }
+        return new StringResponse(localizer.localize(UNKNOWN_REQ_MESSAGE, user.getLanguage()));
     }
+
 
     /**
      * Handles /track command (for more info use documentation)

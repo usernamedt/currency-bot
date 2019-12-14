@@ -26,6 +26,8 @@ public class CurrenciesJsonModel {
      * @throws NotFoundException Exception connected with non-existing currency code
      */
     public BigDecimal getExchangeRate(String currencyCode) throws NotFoundException {
+        if ("rub".equals(currencyCode.toLowerCase()))
+            return new BigDecimal(1);
         if (currencyDataMap.containsKey(currencyCode.toUpperCase()))
             return new BigDecimal(currencyDataMap.get(currencyCode.toUpperCase()).getValue());
         for (CurrencyData currency : currencyDataMap.values()) {
