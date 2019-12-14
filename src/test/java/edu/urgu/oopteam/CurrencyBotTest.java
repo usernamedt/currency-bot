@@ -7,19 +7,24 @@ import edu.urgu.oopteam.crud.repository.CashExchangeRateRepository;
 import edu.urgu.oopteam.crud.repository.CurrencyTrackRequestRepository;
 import edu.urgu.oopteam.crud.repository.UserRepository;
 import edu.urgu.oopteam.models.CurrenciesJsonModel;
-import edu.urgu.oopteam.services.*;
+import edu.urgu.oopteam.services.FileService;
+import edu.urgu.oopteam.services.ITranslationService;
+import edu.urgu.oopteam.services.WebService;
 import edu.urgu.oopteam.viewmodels.BotReponses.*;
 import edu.urgu.oopteam.viewmodels.BuySellExchangeRates;
 import edu.urgu.oopteam.viewmodels.ExchangeData;
 import org.assertj.core.util.BigDecimalComparator;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.internal.matchers.apachecommons.ReflectionEquals;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -32,7 +37,7 @@ import static org.mockito.Mockito.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-@TestPropertySource(locations="classpath:test.properties")
+@TestPropertySource(locations = "classpath:test.properties")
 public class CurrencyBotTest {
     @MockBean
     private ITranslationService localizer;
@@ -60,7 +65,7 @@ public class CurrencyBotTest {
         var mapper = new ObjectMapper();
         currencyBot.currModel = mapper.readValue(jsonString, CurrenciesJsonModel.class);
 
-        when(this.webService.getPageAsString("https://www.cbr-xml-daily.ru/daily_json.js","UTF-8"))
+        when(this.webService.getPageAsString("https://www.cbr-xml-daily.ru/daily_json.js", "UTF-8"))
                 .thenReturn(jsonString);
 
         var usdMoscowSample = fileService.readResourceFileAsString("usd_moscow.html");
@@ -82,8 +87,8 @@ public class CurrencyBotTest {
         var message = new Message(user.getChatId(), "/exchange usd moskva");
         var expectedResponse = new BuySellExchangeRates(
                 new ExchangeData("Агророс", new BigDecimal("63.70")),
-        new ExchangeData("Премьер БКС", new BigDecimal("63.89"))
-                );
+                new ExchangeData("Премьер БКС", new BigDecimal("63.89"))
+        );
 
         var response = (ExchangeResponse) currencyBot.handleExchangeCommand(message);
 
@@ -158,11 +163,11 @@ public class CurrencyBotTest {
         cleanDatabase();
         var user = new User(1, Language.RUSSIAN);
         var message = new Message(user.getChatId(), "/allTracked");
-        currencyBot.handleTrackCommand(new Message(user.getChatId(),  "/track usd rub 3"));
-        currencyBot.handleTrackCommand(new Message(user.getChatId(),  "/track eur rub 5"));
+        currencyBot.handleTrackCommand(new Message(user.getChatId(), "/track usd rub 3"));
+        currencyBot.handleTrackCommand(new Message(user.getChatId(), "/track eur rub 5"));
 
         var expectedRequests = List.of(
-                new CurrencyTrackRequest(new BigDecimal("64.08"), "usd", "rub",  new BigDecimal(3), user),
+                new CurrencyTrackRequest(new BigDecimal("64.08"), "usd", "rub", new BigDecimal(3), user),
                 new CurrencyTrackRequest(new BigDecimal("70.55"), "eur", "rub", new BigDecimal(5), user)
         );
 

@@ -13,10 +13,11 @@ public interface ICurrencyTrackService {
     /**
      * Adds new tracking request to database
      *
-     * @param baseRate     Exchange rate on the moment of request
-     * @param currencyCode Code of the currency that needs to be tracked
-     * @param delta        Minimal difference between exchange rates that we need to notify about
-     * @param user         User object
+     * @param baseRate   Exchange rate on the moment of request
+     * @param firstCode  Code of the first currency that needs to be tracked
+     * @param secondCode Code of the second currency that needs to be tracked
+     * @param delta      Minimal difference between exchange rates that we need to notify about
+     * @param user       User object
      * @return Request that was just added
      */
     CurrencyTrackRequest addTrackedPair(BigDecimal baseRate, String firstCode,
@@ -43,8 +44,9 @@ public interface ICurrencyTrackService {
     /**
      * Finds request in database with specified currency and user's chat ID
      *
-     * @param chatId       User's chat ID
-     * @param currencyCode Code of the currency
+     * @param chatId     User's chat ID
+     * @param firstCode  Code of the first currency
+     * @param secondCode Code of the second currency
      * @return Found request from database
      * @throws SQLException Exception if we have several records with such parameters in database
      */

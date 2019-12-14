@@ -2,11 +2,11 @@ package edu.urgu.oopteam.viewmodels.BotReponses;
 
 import edu.urgu.oopteam.crud.model.CurrencyTrackRequest;
 
-public class TrackResponse  implements  IBotResponse{
+public class TrackResponse implements IBotResponse {
     public final String responseBody;
     public final CurrencyTrackRequest currencyTrackRequest;
 
-    public TrackResponse(CurrencyTrackRequest currencyTrackRequest, String responseBody){
+    public TrackResponse(CurrencyTrackRequest currencyTrackRequest, String responseBody) {
         this.currencyTrackRequest = currencyTrackRequest;
         this.responseBody = responseBody;
     }

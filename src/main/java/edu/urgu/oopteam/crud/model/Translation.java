@@ -8,6 +8,17 @@ import java.util.Objects;
 @Entity
 @Table(name = "translations")
 public class Translation {
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private long id;
+    @Column(name = "english", nullable = false, columnDefinition = "nvarchar(2000)")
+    private String en;
+    @Column(name = "russian", nullable = false, columnDefinition = "nvarchar(2000)")
+    private String ru;
+    public Translation() {
+
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -21,18 +32,6 @@ public class Translation {
     @Override
     public int hashCode() {
         return Objects.hash(id, en, ru);
-    }
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private long id;
-    @Column(name = "english", nullable = false, columnDefinition = "nvarchar(2000)")
-    private String en;
-    @Column(name = "russian", nullable = false, columnDefinition = "nvarchar(2000)")
-    private String ru;
-
-    public Translation() {
-
     }
 
     public String getByLanguage(Language language) {

@@ -23,9 +23,9 @@ public class CurrencyBot {
     private final static String HELP_MESSAGE = "Hello, it's Currency Bot!" +
             "\r\nI can show you some exchange rates. Use commands below:" +
             "\r\n/help - to show this message and possible commands" +
-            "\r\n/curr {currency code} - to show specified currency to RUB exchange rate" +
-            "\r\n/track {currency code} {delta} - start to track specified currency rate and notify if it changes more/less than delta" +
-            "\r\n/untrack {currency code} - stop to track specified currency" +
+            "\r\n/curr {currency code} {currency code} - to show specified pair exchange rate" +
+            "\r\n/track {currency code} {currency code} {delta} - start to track specified currency pair and notify if it changes more/less than delta" +
+            "\r\n/untrack {currency code} {currency code} - stop to track specified currency pair" +
             "\r\n/allTracked - show all being tracked currencies" +
             "\r\n/lang {language code} - set language (available languages: ru, en)" +
             "\r\n/exchange {currency code} {city: moskva / ekaterinburg / sankt-peterburg}";
@@ -183,7 +183,7 @@ public class CurrencyBot {
         var user = userService.getExistingOrNewUser(message.getChatId());
         var messageArgs = message.getMessageBody().split(" ");
         if (messageArgs.length != 4) {
-            return new StringResponse(localizer.localize("This command should only have 2 parameters: currency code and delta",
+            return new StringResponse(localizer.localize("This command should have 3 parameters",
                     user.getLanguage()));
         }
         var firstCurrCode = messageArgs[1].toLowerCase();
@@ -227,7 +227,7 @@ public class CurrencyBot {
         var messageArgs = message.getMessageBody().split(" ");
         if (messageArgs.length != 3) {
             return new StringResponse(
-                    localizer.localize("This command should have 1 parameter", user.getLanguage()));
+                    localizer.localize("This command should have 2 parameters", user.getLanguage()));
         }
         var firstCurrencyCode = messageArgs[1];
         var secondCurrencyCode = messageArgs[2];

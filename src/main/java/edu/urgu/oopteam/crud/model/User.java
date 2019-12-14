@@ -3,14 +3,33 @@ package edu.urgu.oopteam.crud.model;
 import edu.urgu.oopteam.Language;
 
 import javax.persistence.*;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 @Entity
 @Table(name = "users")
 public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
+    @Column(name = "chat_id", nullable = false)
+    private long chatId;
+    @Column(name = "language", nullable = false)
+    private Language language;
+    /**
+     * Needed for Spring to map entities from database !!!!!!!!!!!!!!!!!!!!!!DONOTDELETE
+     */
+    public User() {
+
+    }
+    /**
+     * @param chatId   User's chat ID
+     * @param language Code of the language used by the user
+     */
+    public User(long chatId, Language language) {
+        this.chatId = chatId;
+        this.language = language;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -24,30 +43,6 @@ public class User {
     @Override
     public int hashCode() {
         return Objects.hash(id, chatId, language);
-    }
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
-    @Column(name = "chat_id", nullable = false)
-    private long chatId;
-    @Column(name = "language", nullable = false)
-    private Language language;
-
-    /**
-     * Needed for Spring to map entities from database !!!!!!!!!!!!!!!!!!!!!!DONOTDELETE
-     */
-    public User() {
-
-    }
-
-    /**
-     * @param chatId       User's chat ID
-     * @param language Code of the language used by the user
-     */
-    public User(long chatId, Language language) {
-        this.chatId = chatId;
-        this.language = language;
     }
 
     public Language getLanguage() {
@@ -66,7 +61,9 @@ public class User {
         this.chatId = chatId;
     }
 
-    public long getId() {return id;}
+    public long getId() {
+        return id;
+    }
 
     @Override
     public String toString() {

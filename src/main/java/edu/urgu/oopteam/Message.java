@@ -4,7 +4,7 @@ public class Message {
     private long chatId;
     private String messageBody;
 
-    public Message(long chatId, String messageBody){
+    public Message(long chatId, String messageBody) {
         this.chatId = chatId;
         this.messageBody = messageBody;
     }

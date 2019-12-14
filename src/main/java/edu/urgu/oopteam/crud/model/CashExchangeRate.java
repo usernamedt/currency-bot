@@ -1,7 +1,5 @@
 package edu.urgu.oopteam.crud.model;
 
-import edu.urgu.oopteam.viewmodels.BuySellExchangeRates;
-
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.Date;

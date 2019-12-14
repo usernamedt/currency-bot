@@ -3,8 +3,6 @@ package edu.urgu.oopteam.services;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.Properties;
-
 @Configuration
 public class ConfigurationSettings {
     @Value("${bot.name}")

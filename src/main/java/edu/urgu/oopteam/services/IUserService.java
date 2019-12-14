@@ -21,17 +21,17 @@ public interface IUserService {
     /**
      * Sets new language for a user
      *
-     * @param chatId       User's chat ID
-     * @param language     Code of the language
+     * @param chatId   User's chat ID
+     * @param language Code of the language
      */
     void setLanguage(long chatId, Language language);
 
     /**
      * Load existing user or create new and return it
      *
-     * @param chatId       User's chat ID
+     * @param chatId User's chat ID
      */
-    default User getExistingOrNewUser(long chatId){
+    default User getExistingOrNewUser(long chatId) {
         var user = getFirstByChatId(chatId);
         if (user == null) {
             user = createUser(chatId);

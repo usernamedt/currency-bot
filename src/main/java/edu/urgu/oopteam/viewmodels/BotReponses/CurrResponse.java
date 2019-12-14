@@ -7,12 +7,12 @@ public class CurrResponse implements IBotResponse {
     // currently bot supports only RUB
     public final String currencyCode;
 
-    public CurrResponse(BigDecimal exchangeRate){
+    public CurrResponse(BigDecimal exchangeRate) {
         this.exchangeRate = exchangeRate;
         this.currencyCode = "RUB";
     }
 
-    public CurrResponse(BigDecimal exchangeRate, String currencyCode){
+    public CurrResponse(BigDecimal exchangeRate, String currencyCode) {
         this.exchangeRate = exchangeRate;
         this.currencyCode = currencyCode;
     }

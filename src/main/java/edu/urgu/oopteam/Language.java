@@ -2,7 +2,7 @@ package edu.urgu.oopteam;
 
 public enum Language {
     ENGLISH {
-        public String toString(){
+        public String toString() {
             return "en";
         }
     },

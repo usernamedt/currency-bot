@@ -1,7 +1,5 @@
 package edu.urgu.oopteam.viewmodels;
 
-import edu.urgu.oopteam.crud.model.CashExchangeRate;
-
 import java.text.MessageFormat;
 
 /**
@@ -12,7 +10,7 @@ public class BuySellExchangeRates {
     private final ExchangeData sellData;
 
 
-    public BuySellExchangeRates(ExchangeData buyData, ExchangeData sellData){
+    public BuySellExchangeRates(ExchangeData buyData, ExchangeData sellData) {
         this.buyData = buyData;
         this.sellData = sellData;
     }

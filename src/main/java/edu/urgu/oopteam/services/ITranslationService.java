@@ -6,8 +6,8 @@ public interface ITranslationService {
     /**
      * Returns translated value by provided key using languageCode
      *
-     * @param key          unique key of phrase (now using english phrase variant as a key)
-     * @param language     language (RUSSIAN, ENGLISH)
+     * @param key      unique key of phrase (now using english phrase variant as a key)
+     * @param language language (RUSSIAN, ENGLISH)
      * @return translated phrase
      */
     String localize(String key, Language language);
@@ -15,7 +15,7 @@ public interface ITranslationService {
     /**
      * Check if specified language exists
      *
-     * @param language  language (RUSSIAN, ENGLISH)
+     * @param language language (RUSSIAN, ENGLISH)
      * @return true if exists, otherwise false
      */
     boolean languageExists(Language language);

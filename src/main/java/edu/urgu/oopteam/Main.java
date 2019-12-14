@@ -1,16 +1,9 @@
 package edu.urgu.oopteam;
 
-import edu.urgu.oopteam.services.ConfigurationSettings;
-import edu.urgu.oopteam.services.FileService;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.PropertyConfigurator;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ApplicationContext;
 import org.telegram.telegrambots.ApiContextInitializer;
-
-import java.io.IOException;
-import java.util.Properties;
 
 @SpringBootApplication
 public class Main {

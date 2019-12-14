@@ -38,7 +38,7 @@ public class CurrencyBotDecorator {
      */
     private void notifyTrackedUsers() {
         currencyBot.getNotifyMessages().forEach(message ->
-            messenger.sendMessage(message.getChatId(), message.getMessageBody()));
+                messenger.sendMessage(message.getChatId(), message.getMessageBody()));
     }
 
     private void processMessageAsync(Long chatID, String userMessage) {

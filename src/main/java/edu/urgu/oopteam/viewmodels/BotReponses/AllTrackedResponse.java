@@ -2,7 +2,6 @@ package edu.urgu.oopteam.viewmodels.BotReponses;
 
 import edu.urgu.oopteam.crud.model.CurrencyTrackRequest;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class AllTrackedResponse implements IBotResponse {
@@ -21,6 +20,6 @@ public class AllTrackedResponse implements IBotResponse {
         for (var request : requests) {
             output.append(request.toString()).append("\r\n");
         }
-        return messageBody + " " +output.toString();
+        return messageBody + " " + output.toString();
     }
 }
