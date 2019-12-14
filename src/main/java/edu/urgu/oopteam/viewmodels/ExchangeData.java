@@ -1,5 +1,9 @@
 package edu.urgu.oopteam.viewmodels;
 
+import edu.urgu.oopteam.Message;
+
+import java.text.MessageFormat;
+
 /**
  * Holds currency exchange rate and associated bank name
  */
@@ -26,5 +30,10 @@ public class ExchangeData {
 
     public void setBankName(String bankName) {
         this.bankName = bankName;
+    }
+
+    @Override
+    public String toString() {
+        return MessageFormat.format("ExchangeData[bankName={0}, rate={1}]", bankName, rate);
     }
 }

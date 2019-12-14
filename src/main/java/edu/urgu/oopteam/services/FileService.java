@@ -4,6 +4,8 @@ import org.springframework.stereotype.Service;
 
 import java.io.*;
 import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 @Service
 public class FileService {
@@ -20,8 +22,9 @@ public class FileService {
             throw new IllegalArgumentException("file is not found!");
         } else {
             var tokenFile = new File(resource.getFile());
-            var fr = new FileReader(tokenFile);
-            var reader = new BufferedReader(fr);
+            // Эта матрёшка нужна, чтобы при сборке в Maven, когда считывается файл в тесте,
+            // явно указывалась кодировка, иначе возникает AssertionError.
+            var reader = new BufferedReader(new InputStreamReader(new FileInputStream(tokenFile), StandardCharsets.UTF_8));
             String line;
             var builder = new StringBuilder();
             while ((line = reader.readLine()) != null) {
