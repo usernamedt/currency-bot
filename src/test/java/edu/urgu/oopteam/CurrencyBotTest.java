@@ -109,14 +109,14 @@ public class CurrencyBotTest {
     @Test
     public void testTrackCommand() {
         var user = new User(1, Language.RUSSIAN);
-        var message = new Message(user.getChatId(), "/track usd -10");
-        var expectedRequest = new CurrencyTrackRequest(new BigDecimal("64.0817"),
-                "usd", new BigDecimal(-10), user);
+        var message = new Message(user.getChatId(), "/track usd rub -10");
+        var expectedRequest = new CurrencyTrackRequest(new BigDecimal("64.08"),
+                "usd", "rub", new BigDecimal(-10), user);
 
         var response = (TrackResponse) currencyBot.handleTrackCommand(message);
 
         assertEquals(response.currencyTrackRequest.getDelta(), expectedRequest.getDelta());
-        assertEquals(response.currencyTrackRequest.getCurrencyCode(), expectedRequest.getCurrencyCode());
+        assertEquals(response.currencyTrackRequest.getFirstCurrencyCode(), expectedRequest.getFirstCurrencyCode());
         // С этой строчкой иногда работает, иногда нет wtf
         assertEquals(response.currencyTrackRequest.getUser().getChatId(), expectedRequest.getUser().getChatId());
     }
@@ -124,7 +124,7 @@ public class CurrencyBotTest {
     @Test
     public void testUntrackCommand_NotFound() {
         var user = new User(1, Language.RUSSIAN);
-        var message = new Message(user.getChatId(), "/untrack usd");
+        var message = new Message(user.getChatId(), "/untrack usd rub");
         var expectedRequest = new StringResponse("No such currency in the tracked list");
 
         var response = (StringResponse) currencyBot.handleUntrackCommand(message);
@@ -136,12 +136,12 @@ public class CurrencyBotTest {
     @Test
     public void testUntrackCommand_Exists() {
         var user = new User(1, Language.RUSSIAN);
-        var message = new Message(user.getChatId(), "/untrack usd");
-        var expectedRequest = new CurrencyTrackRequest(new BigDecimal("64.0817"), "usd",
-                new BigDecimal(-10), user);
+        var message = new Message(user.getChatId(), "/untrack usd rub");
+        var expectedRequest = new CurrencyTrackRequest(new BigDecimal("64.08"), "usd",
+                "rub", new BigDecimal(-10), user);
 
 
-        var trackMessage = new Message(user.getChatId(), "/track usd -10");
+        var trackMessage = new Message(user.getChatId(), "/track usd rub -10");
 
         currencyBot.handleTrackCommand(trackMessage);
 
@@ -149,7 +149,7 @@ public class CurrencyBotTest {
 
         assertEquals(response.currencyTrackRequest.getDelta().stripTrailingZeros(),
                 expectedRequest.getDelta().stripTrailingZeros());
-        assertEquals(response.currencyTrackRequest.getCurrencyCode(), expectedRequest.getCurrencyCode());
+        assertEquals(response.currencyTrackRequest.getFirstCurrencyCode(), expectedRequest.getFirstCurrencyCode());
         assertEquals(response.currencyTrackRequest.getUser().getChatId(), expectedRequest.getUser().getChatId());
     }
 
@@ -158,12 +158,12 @@ public class CurrencyBotTest {
         cleanDatabase();
         var user = new User(1, Language.RUSSIAN);
         var message = new Message(user.getChatId(), "/allTracked");
-        currencyBot.handleTrackCommand(new Message(user.getChatId(),  "/track usd 3"));
-        currencyBot.handleTrackCommand(new Message(user.getChatId(),  "/track eur 5"));
+        currencyBot.handleTrackCommand(new Message(user.getChatId(),  "/track usd rub 3"));
+        currencyBot.handleTrackCommand(new Message(user.getChatId(),  "/track eur rub 5"));
 
         var expectedRequests = List.of(
-                new CurrencyTrackRequest(new BigDecimal("64.082"), "usd", new BigDecimal(3), user),
-                new CurrencyTrackRequest(new BigDecimal("70.548"), "eur", new BigDecimal(5), user)
+                new CurrencyTrackRequest(new BigDecimal("64.08"), "usd", "rub",  new BigDecimal(3), user),
+                new CurrencyTrackRequest(new BigDecimal("70.55"), "eur", "rub", new BigDecimal(5), user)
         );
 
         var actualResponse = (AllTrackedResponse) currencyBot.handleAllTrackedCommand(message);
@@ -171,6 +171,9 @@ public class CurrencyBotTest {
         assertThat(expectedRequests).usingElementComparatorIgnoringFields("id", "user")
                 .usingComparatorForType(new BigDecimalComparator(), BigDecimal.class)
                 .containsAll(actualResponse.requests);
+        assertThat(actualResponse.requests).usingElementComparatorIgnoringFields("id", "user")
+                .usingComparatorForType(new BigDecimalComparator(), BigDecimal.class)
+                .containsAll(expectedRequests);
     }
 
     @After

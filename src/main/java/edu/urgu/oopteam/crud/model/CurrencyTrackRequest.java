@@ -18,9 +18,15 @@ public class CurrencyTrackRequest {
     // exchange rate for currency on the time of
     @Column(name = "base_rate", nullable = false)
     private BigDecimal baseRate;
-    // currency name
-    @Column(name = "currency_name", nullable = false)
-    private String currencyCode;
+
+    // first currency name
+    @Column(name = "first_currency", nullable = false)
+    private String firstCurrencyCode;
+
+    // second currency name
+    @Column(name = "second_currency", nullable = false)
+    private String secondCurrencyCode;
+
     // delta
     @Column(name = "delta", nullable = false)
     private BigDecimal delta;
@@ -37,9 +43,11 @@ public class CurrencyTrackRequest {
 
     }
 
-    public CurrencyTrackRequest(BigDecimal baseRate, String currencyCode, BigDecimal delta, User user) {
+    public CurrencyTrackRequest(BigDecimal baseRate, String firstCurrencyCode,
+                                String secondCurrencyCode, BigDecimal delta, User user) {
         this.baseRate = baseRate;
-        this.currencyCode = currencyCode;
+        this.firstCurrencyCode = firstCurrencyCode;
+        this.secondCurrencyCode = secondCurrencyCode;
         this.delta = delta;
         this.user = user;
     }
@@ -62,12 +70,12 @@ public class CurrencyTrackRequest {
     }
 
 
-    public String getCurrencyCode() {
-        return currencyCode;
+    public String getFirstCurrencyCode() {
+        return firstCurrencyCode;
     }
 
-    public void setCurrencyCode(String currencyCode) {
-        this.currencyCode = currencyCode;
+    public void setFirstCurrencyCode(String firstCurrencyCode) {
+        this.firstCurrencyCode = firstCurrencyCode;
     }
 
 
@@ -89,26 +97,38 @@ public class CurrencyTrackRequest {
 
 
     @Override
-    public String toString() {
-        return MessageFormat.format("CurrencyTrackRequest " +
-                        "[id= {0}, userId= {1}, baseRate= {2}, currencyCode= {3}, delta= {4}]",
-                id, user.getId(), baseRate, currencyCode, delta);
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         CurrencyTrackRequest that = (CurrencyTrackRequest) o;
         return id == that.id &&
                 baseRate.equals(that.baseRate) &&
-                currencyCode.equals(that.currencyCode) &&
+                firstCurrencyCode.equals(that.firstCurrencyCode) &&
+                secondCurrencyCode.equals(that.secondCurrencyCode) &&
                 delta.equals(that.delta) &&
                 user.equals(that.user);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, baseRate, currencyCode, delta, user);
+        return Objects.hash(id, baseRate, firstCurrencyCode, secondCurrencyCode, delta, user);
+    }
+
+    public String getSecondCurrencyCode() {
+        return secondCurrencyCode;
+    }
+
+    public void setSecondCurrencyCode(String secondCurrencyCode) {
+        this.secondCurrencyCode = secondCurrencyCode;
+    }
+
+    @Override
+    public String toString() {
+        return "CurrencyTrackRequest{" +
+                "baseRate=" + baseRate +
+                ", firstCurrencyCode='" + firstCurrencyCode + '\'' +
+                ", secondCurrencyCode='" + secondCurrencyCode + '\'' +
+                ", delta=" + delta +
+                '}';
     }
 }

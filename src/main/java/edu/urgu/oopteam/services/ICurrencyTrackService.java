@@ -19,7 +19,8 @@ public interface ICurrencyTrackService {
      * @param user         User object
      * @return Request that was just added
      */
-    CurrencyTrackRequest addTrackedCurrency(BigDecimal baseRate, String currencyCode, BigDecimal delta, User user);
+    CurrencyTrackRequest addTrackedPair(BigDecimal baseRate, String firstCode,
+                                        String secondCode, BigDecimal delta, User user);
 
     /**
      * Updates existing tracking request
@@ -28,7 +29,7 @@ public interface ICurrencyTrackService {
      * @param delta            New minimal difference between exchange rates that we need to notify about
      * @param currExchangeRate New exchange rate on the moment of request
      */
-    void updateTrackedCurrency(CurrencyTrackRequest request, BigDecimal delta, BigDecimal currExchangeRate);
+    void updateTrackedPair(CurrencyTrackRequest request, BigDecimal delta, BigDecimal currExchangeRate);
 
     List<CurrencyTrackRequest> findAllByUserId(long chatId);
 
@@ -37,7 +38,7 @@ public interface ICurrencyTrackService {
      *
      * @param request Request to delete
      */
-    void deleteTrackedCurrency(CurrencyTrackRequest request);
+    void deleteTrackedPair(CurrencyTrackRequest request);
 
     /**
      * Finds request in database with specified currency and user's chat ID
@@ -47,5 +48,5 @@ public interface ICurrencyTrackService {
      * @return Found request from database
      * @throws SQLException Exception if we have several records with such parameters in database
      */
-    CurrencyTrackRequest findTrackedCurrency(long chatId, String currencyCode) throws SQLException;
+    CurrencyTrackRequest findTrackedPair(long chatId, String firstCode, String secondCode) throws SQLException;
 }

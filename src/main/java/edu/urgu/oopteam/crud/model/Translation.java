@@ -3,7 +3,6 @@ package edu.urgu.oopteam.crud.model;
 import edu.urgu.oopteam.Language;
 
 import javax.persistence.*;
-import java.text.MessageFormat;
 import java.util.Objects;
 
 @Entity
@@ -44,6 +43,9 @@ public class Translation {
 
     @Override
     public String toString() {
-        return MessageFormat.format("[id= {0}, en= {1}, ru= {2}]", id, en, ru);
+        return "Translation{" +
+                "en='" + en + '\'' +
+                ", ru='" + ru + '\'' +
+                '}';
     }
 }

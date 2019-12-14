@@ -12,10 +12,12 @@ import java.util.List;
 public interface CurrencyTrackRequestRepository extends JpaRepository<CurrencyTrackRequest, Long> {
     /**
      * @param userId       User's chat ID
-     * @param currencyCode Code of the required currency
+     * @param firstCurrencyCode Code of the required currency
+     * @param secondCurrencyCode Code of the required currency
      * @return List of matching requests
      */
-    List<CurrencyTrackRequest> findByUserIdAndCurrencyCode(long userId, String currencyCode);
+    List<CurrencyTrackRequest> findByUserIdAndFirstCurrencyCodeAndSecondCurrencyCode(
+            long userId, String firstCurrencyCode, String secondCurrencyCode);
 
     List<CurrencyTrackRequest> getAllByUserId(final Long chatId);
 

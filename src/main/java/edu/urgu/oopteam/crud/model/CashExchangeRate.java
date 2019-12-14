@@ -129,4 +129,16 @@ public class CashExchangeRate {
     public int hashCode() {
         return Objects.hash(id, currencyCode, city, buyBankName, sellBankName, buyRate, sellRate, fetchTime);
     }
+
+    @Override
+    public String toString() {
+        return "CashExchangeRate{" +
+                "currencyCode='" + currencyCode + '\'' +
+                ", city='" + city + '\'' +
+                ", buyBankName='" + buyBankName + '\'' +
+                ", sellBankName='" + sellBankName + '\'' +
+                ", buyRate=" + buyRate +
+                ", sellRate=" + sellRate +
+                '}';
+    }
 }

@@ -70,7 +70,9 @@ public class User {
 
     @Override
     public String toString() {
-        return MessageFormat.format("[id= {0}, chatId= {1}, languageCode= {2}]", id, chatId, language);
+        return "User{" +
+                "chatId=" + chatId +
+                ", language=" + language +
+                '}';
     }
-
 }

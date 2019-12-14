@@ -31,8 +31,9 @@ public class CurrencyTrackService implements ICurrencyTrackService {
     }
 
     @Override
-    public CurrencyTrackRequest findTrackedCurrency(long userId, String currencyCode) throws SQLException {
-        var trackedCurrenciesList = currencyTrackRequestRepository.findByUserIdAndCurrencyCode(userId, currencyCode);
+    public CurrencyTrackRequest findTrackedPair(long userId, String firstCode, String secondCode) throws SQLException {
+        var trackedCurrenciesList = currencyTrackRequestRepository
+                .findByUserIdAndFirstCurrencyCodeAndSecondCurrencyCode(userId, firstCode, secondCode);
         if (trackedCurrenciesList.isEmpty()) {
             return null;
         }
@@ -43,21 +44,21 @@ public class CurrencyTrackService implements ICurrencyTrackService {
     }
 
     @Override
-    public CurrencyTrackRequest addTrackedCurrency(BigDecimal baseRate, String currencyCode, BigDecimal delta, User user) {
-        var trackRequest = new CurrencyTrackRequest(baseRate, currencyCode, delta, user);
+    public CurrencyTrackRequest addTrackedPair(BigDecimal baseRate, String firstCode, String secondCode, BigDecimal delta, User user) {
+        var trackRequest = new CurrencyTrackRequest(baseRate, firstCode, secondCode, delta, user);
         currencyTrackRequestRepository.save(trackRequest);
         return trackRequest;
     }
 
     @Override
-    public void updateTrackedCurrency(CurrencyTrackRequest request, BigDecimal delta, BigDecimal currExchangeRate) {
+    public void updateTrackedPair(CurrencyTrackRequest request, BigDecimal delta, BigDecimal currExchangeRate) {
         request.setDelta(delta);
         request.setBaseRate(currExchangeRate);
         currencyTrackRequestRepository.save(request);
     }
 
     @Override
-    public void deleteTrackedCurrency(CurrencyTrackRequest request) {
+    public void deleteTrackedPair(CurrencyTrackRequest request) {
         currencyTrackRequestRepository.delete(request);
     }
 }

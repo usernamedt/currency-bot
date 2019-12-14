@@ -14,8 +14,8 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.SQLException;
-import java.util.*;
-import java.util.concurrent.CompletableFuture;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 @EnableScheduling
@@ -50,7 +50,7 @@ public class CurrencyBot {
                        ITranslationService localizer,
                        ICashExchangeService currencyCashExchangeService,
                        WebService webService
-                       ) {
+    ) {
         this.currencyTrackService = currencyTrackService;
         this.userService = userService;
         this.localizer = localizer;
@@ -71,16 +71,24 @@ public class CurrencyBot {
         var requests = currencyTrackService.findAll();
         requests.forEach(request -> {
             try {
-                var currentRate = currModel.getExchangeRate(request.getCurrencyCode());
+                //var currentRate = currModel.getExchangeRate(request.getFirstCurrencyCode());
+                var firstRate = currModel.getExchangeRate(request.getFirstCurrencyCode());
+                var secondRate = currModel.getExchangeRate(request.getSecondCurrencyCode());
+
+                var currentRate = firstRate.divide(secondRate, 5, RoundingMode.DOWN);
                 var currentDelta = currentRate.subtract(request.getBaseRate());
                 if ((request.getDelta().multiply(currentDelta.subtract(request.getDelta()))).compareTo(BigDecimal.ZERO) >= 0) {
-                    CompletableFuture.runAsync(() -> {
-                        var localizedMessage = localizer.localize(
-                                "Rate of your tracked currency has changed",
-                                request.getUser().getLanguage()) + " " + request.getCurrencyCode();
-                        result.add(new Message(request.getUser().getChatId(), localizedMessage));
-                        currencyTrackService.deleteTrackedCurrency(request);
-                    });
+                    var localizedMessage =
+                            localizer.localize("Rate of your tracked currency pair ", request.getUser().getLanguage())
+                                    + request.getFirstCurrencyCode().toUpperCase() + "/"
+                                    + request.getSecondCurrencyCode().toUpperCase() + " " +
+                                    localizer.localize("has changed from ", request.getUser().getLanguage()) +
+                                    request.getBaseRate().toPlainString() + " " + request.getSecondCurrencyCode() +
+                                    localizer.localize(" to ", request.getUser().getLanguage())
+                                    + currentRate.toPlainString() +
+                                    ", delta is " + currentDelta.toPlainString();
+                    result.add(new Message(request.getUser().getChatId(), localizedMessage));
+                    currencyTrackService.deleteTrackedPair(request);
                 }
             } catch (NotFoundException e) {
                 LOGGER.error(e.getMessage());
@@ -174,27 +182,32 @@ public class CurrencyBot {
     public IBotResponse handleTrackCommand(Message message) {
         var user = userService.getExistingOrNewUser(message.getChatId());
         var messageArgs = message.getMessageBody().split(" ");
-        if (messageArgs.length != 3) {
+        if (messageArgs.length != 4) {
             return new StringResponse(localizer.localize("This command should only have 2 parameters: currency code and delta",
                     user.getLanguage()));
         }
-        var currencyCode = messageArgs[1].toLowerCase();
-        var delta = new BigDecimal(messageArgs[2]);
+        var firstCurrCode = messageArgs[1].toLowerCase();
+        var secondCurrCode = messageArgs[2].toLowerCase();
+        var delta = new BigDecimal(messageArgs[3]);
         BigDecimal currExchangeRate;
         try {
-            currExchangeRate = currModel.getExchangeRate(currencyCode);
+            var firstRate = currModel.getExchangeRate(firstCurrCode);
+            var secondRate = currModel.getExchangeRate(secondCurrCode);
+
+            currExchangeRate = firstRate.divide(secondRate, 5, RoundingMode.DOWN);
         } catch (NotFoundException e) {
             return new StringResponse(e.getMessage());
         }
 
         try {
-            var trackedCurrency = currencyTrackService.findTrackedCurrency(user.getId(), currencyCode);
+            var trackedCurrency = currencyTrackService.findTrackedPair(user.getId(), firstCurrCode, secondCurrCode);
             if (trackedCurrency == null) {
-                var trackRequest = currencyTrackService.addTrackedCurrency(currExchangeRate, currencyCode, delta, user);
+                var trackRequest = currencyTrackService
+                        .addTrackedPair(currExchangeRate, firstCurrCode, secondCurrCode, delta, user);
                 return new TrackResponse(trackRequest,
                         localizer.localize("New request added", user.getLanguage()));
             }
-            currencyTrackService.updateTrackedCurrency(trackedCurrency, delta, currExchangeRate);
+            currencyTrackService.updateTrackedPair(trackedCurrency, delta, currExchangeRate);
             return new TrackResponse(trackedCurrency, localizer.localize("Existing request has been updated", user.getLanguage()));
 
         } catch (SQLException e) {
@@ -212,18 +225,20 @@ public class CurrencyBot {
     public IBotResponse handleUntrackCommand(Message message) {
         var user = userService.getExistingOrNewUser(message.getChatId());
         var messageArgs = message.getMessageBody().split(" ");
-        if (messageArgs.length != 2) {
+        if (messageArgs.length != 3) {
             return new StringResponse(
                     localizer.localize("This command should have 1 parameter", user.getLanguage()));
         }
-        var currencyCode = messageArgs[1];
+        var firstCurrencyCode = messageArgs[1];
+        var secondCurrencyCode = messageArgs[2];
         try {
-            var trackedCurrency = currencyTrackService.findTrackedCurrency(user.getId(), currencyCode);
+            var trackedCurrency = currencyTrackService
+                    .findTrackedPair(user.getId(), firstCurrencyCode, secondCurrencyCode);
             if (trackedCurrency == null) {
                 return new StringResponse(
                         localizer.localize("No such currency in the tracked list", user.getLanguage()));
             }
-            currencyTrackService.deleteTrackedCurrency(trackedCurrency);
+            currencyTrackService.deleteTrackedPair(trackedCurrency);
             return new TrackResponse(trackedCurrency,
                     localizer.localize("This tracking request has been successfully cancelled",
                             user.getLanguage()));
@@ -249,7 +264,6 @@ public class CurrencyBot {
         }
         return new AllTrackedResponse(userRequests, localizer.localize("Your current tracking requests:", user.getLanguage()));
     }
-
 
 
     /**
